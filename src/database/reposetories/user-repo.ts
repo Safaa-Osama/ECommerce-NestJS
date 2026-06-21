@@ -1,19 +1,12 @@
+import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import BaseRepo from './base-repo';
-import userModel, { UserDocument } from '../models/user.model';
+import { User, UserDocument } from '../models/user.model';
+import { InjectModel } from '@nestjs/mongoose';
 
-
-class UserRepo extends BaseRepo<UserDocument> {
-    constructor(protected readonly model: Model<UserDocument> = userModel as any) {
-        super(model)
-    }
-
-    async checkUser(email: string): Promise<Boolean> {
-        return await this.model.findOne({ filter: { email } }) != null
-
-
-    }
+@Injectable()
+export class UserRepo extends BaseRepo<UserDocument> {
+  constructor(@InjectModel(User.name) private _userModel: Model<UserDocument>) {
+    super(_userModel);
+  }
 }
-
-export default new UserRepo()
- 

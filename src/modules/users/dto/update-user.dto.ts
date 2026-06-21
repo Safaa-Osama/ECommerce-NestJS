@@ -7,6 +7,7 @@ import {
   IsPhoneNumber,
   IsString,
 } from 'class-validator';
+import { GenderEnum, RoleEnum } from 'src/common/enums/userEnum';
 
 export class UpdateUserDto extends PartialType(SignUpDto) {
   @IsString()
@@ -21,13 +22,13 @@ export class UpdateUserDto extends PartialType(SignUpDto) {
   @IsOptional()
   profilePic: string;
 
-  @IsEnum(['user', 'admin'])
+  @IsEnum(RoleEnum)
   @IsOptional()
-  role: string;
+  role: RoleEnum;
 
-  @IsEnum(['male', 'female'])
+  @IsEnum(GenderEnum)
   @IsOptional()
-  gender: string;
+  gender: GenderEnum;
 
   @IsString()
   @IsPhoneNumber()

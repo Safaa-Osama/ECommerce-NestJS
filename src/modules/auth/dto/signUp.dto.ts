@@ -1,10 +1,22 @@
-import { IsEnum, IsNumber, IsOptional, IsPhoneNumber, IsString, Length, Min, ValidateIf } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPhoneNumber,
+  IsString,
+  Length,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 import { LoginDto } from './login.dto';
-import { IsMatch } from 'src/common/validation/custom-validation';
+import { IsMatch } from 'src/common/pipes/user.pipe';
+import { GenderEnum, RoleEnum } from 'src/common/enums/userEnum';
 
 export class SignUpDto extends LoginDto {
   @IsString()
-  @Length(3.1)
+  @IsNotEmpty()
+  @Length(3,25)
   userName: string;
 
   @IsMatch(['password'])
@@ -19,11 +31,11 @@ export class SignUpDto extends LoginDto {
   @IsOptional()
   profilePic: string;
 
-  @IsEnum(['user', 'admin'])
-  role: string;
+  @IsEnum(RoleEnum)
+  role: RoleEnum;
 
-  @IsEnum(['male', 'female'])
-  gender: string;
+  @IsEnum(GenderEnum)
+  gender: GenderEnum;
 
   @IsString()
   @IsPhoneNumber()

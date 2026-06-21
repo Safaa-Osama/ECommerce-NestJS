@@ -11,24 +11,27 @@ import { Connection } from 'mongoose';
   imports: [
     AuthModule,
     UsersModule,
+    // config module
     ConfigModule.forRoot({
       envFilePath: ['.env.development', '.env.production'],
       isGlobal: true,
     }),
-    MongooseModule.forRoot(process.env.DB_LOCAL!, {
-  onConnectionCreate: (connection: Connection) => {
-    connection.on('connected', () => console.log('database connected'));
-    connection.on('open', () => console.log('database open'));
-    connection.on('disconnected', () => console.log('database disconnected'));
-    connection.on('reconnected', () => console.log('database reconnected'));
-    connection.on('disconnecting', () => console.log('database disconnecting'));
+    // mongo db
+    MongooseModule.forRoot(process.env.DB_LOCAL as string, {
+      onConnectionCreate: (connection: Connection) => {
+        connection.on('connected', () => console.log('database connected'));
+        connection.on('open', () => console.log('database open'));
+        connection.on('disconnected', () => console.log('database disconnected'),);
+        connection.on('reconnected', () => console.log('database reconnected'));
+        connection.on('disconnecting', () => console.log('database disconnecting'),);
 
-    return connection;
-  },
-}),
+        return connection;
+      },
+    }),
   ],
+
   exports: [],
   providers: [AppService],
   controllers: [AppController],
 })
-export class AppModule {}
+export class AppModule { }
