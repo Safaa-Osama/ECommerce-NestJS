@@ -9,15 +9,14 @@ import { Connection } from 'mongoose';
 
 @Module({
   imports: [
-    AuthModule,
-    UsersModule,
-    // config module
+    // config 
     ConfigModule.forRoot({
       envFilePath: ['.env.development', '.env.production'],
       isGlobal: true,
     }),
+    
     // mongo db
-    MongooseModule.forRoot(process.env.DB_LOCAL as string, {
+    MongooseModule.forRoot(process.env.DB_LOCAL!, {
       onConnectionCreate: (connection: Connection) => {
         connection.on('connected', () => console.log('database connected'));
         connection.on('open', () => console.log('database open'));
@@ -28,6 +27,11 @@ import { Connection } from 'mongoose';
         return connection;
       },
     }),
+    // config 
+    
+    // modules
+    AuthModule,
+    UsersModule
   ],
 
   exports: [],
