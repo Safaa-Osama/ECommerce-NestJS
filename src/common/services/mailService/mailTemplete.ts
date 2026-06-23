@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+
+export const emailTemplete = function ({ otp, userName }: { otp: number; userName: string }) {
+  
+  return `<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -101,7 +104,7 @@
           <tr>
             <td style="padding: 40px 30px; background-color: #ffffff;">
               <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 24px; color: #1f2937; font-weight: 500;">
-                Hello {{userName}},
+              Hello ${userName}
               </p>
               <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 24px; color: #4b5563;">
                 Thank you for choosing <strong>{{E-commerce}}</strong>. To complete your verification, please use the
@@ -115,7 +118,7 @@
                   <td align="center">
                     <div
                       style="font-family: 'Courier New', Courier, monospace, sans-serif; font-size: 32px; letter-spacing: 6px; font-weight: 800; color: #4f46e5; background-color: #f5f3ff; border: 1px dashed #c084fc; padding: 16px 24px; border-radius: 12px; display: inline-block;">
-                      `otp-code`
+                      ${otp}
                     </div>
                   </td>
                 </tr>
@@ -163,4 +166,6 @@
   </table>
 </body>
 
-</html>
+</html>`
+}
+

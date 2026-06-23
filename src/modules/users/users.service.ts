@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User } from 'src/database/models/user.model';
+import { UserRepo } from 'src/database/reposetories/user-repo';
 
 @Injectable()
 export class UsersService {
-      constructor(@InjectModel(User.name) private _userModel: Model<User>) {}
+      constructor(private readonly userRepo:UserRepo) {}
     
 getAllUsers=async()=>{
-    const users=await this._userModel.find();
+    const users=await this.userRepo.find();
     return users;
 }
 }

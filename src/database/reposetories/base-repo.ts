@@ -35,15 +35,15 @@ abstract class BaseRepo<TDocument> {
     return this.Model.findOne(filter, projection, options);
   }
 
-  public async find({
-    filter,
-    projection,
-    options,
-  }: {
-    filter: QueryFilter<TDocument>;
-    projection?: ProjectionType<TDocument> | null | undefined;
-    options?: QueryOptions<TDocument> | null | undefined;
-  }): Promise<HydratedDocument<TDocument>[]> {
+ public async find({
+  filter,
+  projection,
+  options,
+}: {
+  filter?: QueryFilter<TDocument>;
+  projection?: ProjectionType<TDocument>;
+  options?: QueryOptions<TDocument>;
+} = {}): Promise<HydratedDocument<TDocument>[]> {
     let query = this.Model.find(filter, projection)
       .sort(options?.sort)
       .limit(options?.limit!)

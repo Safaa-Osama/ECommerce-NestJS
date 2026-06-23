@@ -1,31 +1,32 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { SignUpDto } from './dto/signUp.dto';
 import { LoginDto } from './dto/login.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { User } from 'src/database/models/user.model';
-import { Model } from 'mongoose';
 import { hash } from 'src/common/security/hash';
 import { encryptValue } from 'src/common/security/encript';
+import { UserRepo } from 'src/database/reposetories/user-repo';
+import { EmailEnum } from 'src/common/enums/emailEnum';
+import { generateOtp, sendMail } from 'src/common/services/mailService/sendMail';
+import { emailTemplete } from 'src/common/services/mailService/mailTemplete';
+import { eventEmitter } from 'src/common/services/mailService/email.event';
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel(User.name) private _userModel: Model<User>) {}
+  constructor(private readonly userRepo: UserRepo) { }
+
+  
 
   async signUp(body: SignUpDto) {
-    const { userName, role, gender, email, age, password,cPassword, profilePic,phone } = body;
-    const emailExist = await this._userModel.findOne({ email });
+    const { userName, role, gender, email, age, password, cPassword, profilePic, phone } = body;
+    const emailExist = await this.userRepo.findOne({ filter: { email } });
 
     if (emailExist) {
-      throw new BadRequestException('email already exist');
-    }
-
-    if(password !== cPassword) {
-      throw new BadRequestException('password and confirm password does not match');
+      throw new ConflictException('email already exist');
     }
     if (profilePic) {
-      
+      //save image on cloud
     }
-    const user = await this._userModel.create({
+
+    const user = await this.userRepo.create({
       userName,
       role,
       gender,
@@ -36,12 +37,17 @@ export class AuthService {
       profilePic
     });
 
-    if (!user) {
-      //delete profile pic 
-      throw new InternalServerErrorException('Something went wrong');
-    }
-    
-    return user;
+     const otp = generateOtp();
+
+    eventEmitter.emit(EmailEnum.confirmEmail, async () => {
+      await sendMail({
+        to: email,
+        subject: "Welcome to SocailMedia-App",
+        html: emailTemplete({ otp, userName })
+      });
+    });
+
+    return {user,otp};
   }
 
   login(body: LoginDto) {
