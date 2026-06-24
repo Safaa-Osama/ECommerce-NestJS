@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { SignUpDto } from './dto/signUp.dto';
 import { LoginDto } from './dto/login.dto';
 import { hash } from 'src/common/security/hash';
@@ -8,12 +8,16 @@ import { EmailEnum } from 'src/common/enums/emailEnum';
 import { generateOtp, sendMail } from 'src/common/services/mailService/sendMail';
 import { emailTemplete } from 'src/common/services/mailService/mailTemplete';
 import { eventEmitter } from 'src/common/services/mailService/email.event';
+import type { RedisClientType } from 'redis';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly userRepo: UserRepo) { }
+  constructor(
+    private readonly userRepo: UserRepo,
+@Inject("REDIS_CLIENT")
+  private readonly redisService: RedisClientType,  ) { }
 
-  
+
 
   async signUp(body: SignUpDto) {
     const { userName, role, gender, email, age, password, cPassword, profilePic, phone } = body;
@@ -37,7 +41,7 @@ export class AuthService {
       profilePic
     });
 
-     const otp = generateOtp();
+    const otp = generateOtp();
 
     eventEmitter.emit(EmailEnum.confirmEmail, async () => {
       await sendMail({
@@ -47,7 +51,7 @@ export class AuthService {
       });
     });
 
-    return {user,otp};
+    return { user, otp };
   }
 
   login(body: LoginDto) {

@@ -6,6 +6,7 @@ import { UsersModule } from './modules/users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
+import { RedisModule } from './common/services/redis/redisModule';
 
 @Module({
   imports: [
@@ -27,11 +28,9 @@ import { Connection } from 'mongoose';
         return connection;
       },
     }),
-    // config 
-    
-    // modules
     AuthModule,
-    UsersModule
+    UsersModule,
+    RedisModule
   ],
 
   exports: [],
