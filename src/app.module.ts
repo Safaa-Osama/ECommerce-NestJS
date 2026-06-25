@@ -7,6 +7,9 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { RedisModule } from './common/services/redis/redisModule';
+import { TokenService } from './common/services/tokenService';
+import RedisService from './common/services/redis/redis.service';
+import { AuthenticationService } from './middleware/authentication';
 
 @Module({
   imports: [
@@ -34,7 +37,12 @@ import { RedisModule } from './common/services/redis/redisModule';
   ],
 
   exports: [],
-  providers: [AppService],
+  providers: [
+    AppService,
+    TokenService,
+    RedisService,
+    AuthenticationService
+  ],
   controllers: [AppController],
 })
 export class AppModule { }

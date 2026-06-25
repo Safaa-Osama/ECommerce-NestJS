@@ -1,26 +1,22 @@
-// import { JwtService } from '@nestjs/jwt';
-// import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 
+@Injectable()
+export class TokenService {
 
-// class TokenService {
-//     constructor(){}
+  constructor(private readonly jwtService: JwtService) { }
 
-//     generateToken({ payload, secretKey, options }: {
-//     payload: object
-//     secretKey: Secret,
-//     options?: SignOptions
-// }): string {
-//     return jwt.sign(payload, secretKey, options)
-// }
+  generateToken({ payload, options }: {
+    payload: object;
+    options?: JwtSignOptions;
+  }): Promise<string> {
+    return this.jwtService.signAsync(payload, options);
+  }
 
-// verifyToken({ token, secretKey, options }: {
-
-//     token: string,
-//     secretKey: Secret,
-//     options?: VerifyOptions,
-// }): JwtPayload {
-//     return jwt.verify(token, secretKey, options) as JwtPayload
-// }
-// }
-
-// export default TokenService
+  verifyToken({ token, options }: {
+    token: string;
+    options?: JwtVerifyOptions;
+  }): Promise<object> {
+    return this.jwtService.verifyAsync(token, options);
+  }
+}

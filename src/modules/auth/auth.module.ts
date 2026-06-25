@@ -5,6 +5,8 @@ import userModel from 'src/database/models/user.model';
 import { UserRepo } from 'src/database/reposetories/user-repo';
 import { RedisModule } from 'src/common/services/redis/redisModule';
 import RedisService from 'src/common/services/redis/redis.service';
+import { TokenService } from 'src/common/services/tokenService';
+import { JwtService } from '@nestjs/jwt';
 
 @Global()
 @Module({
@@ -16,11 +18,10 @@ import RedisService from 'src/common/services/redis/redis.service';
   providers: [
     AuthService,
     UserRepo,
-    RedisService
+    RedisService,
+    TokenService,
+    JwtService
   ],
-  exports: [AuthService,
-    UserRepo,
-
-  ],
+  exports: [ ],
 })
 export class AuthModule { }

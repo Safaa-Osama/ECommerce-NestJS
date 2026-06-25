@@ -1,7 +1,7 @@
-import { BadRequestException, ConflictException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, UploadedFile } from '@nestjs/common';
 import { SignUpDto } from './dto/signUp.dto';
 import { LoginDto } from './dto/login.dto';
-import { hash } from 'src/common/security/hash';
+import { compare, hash } from 'src/common/security/hash';
 import { encryptValue } from 'src/common/security/encript';
 import { UserRepo } from 'src/database/reposetories/user-repo';
 import { EmailEnum } from 'src/common/enums/emailEnum';
@@ -9,13 +9,18 @@ import { generateOtp, sendMail } from 'src/common/services/mailService/sendMail'
 import { emailTemplete } from 'src/common/services/mailService/mailTemplete';
 import { eventEmitter } from 'src/common/services/mailService/email.event';
 import RedisService from 'src/common/services/redis/redis.service';
-import { ProviderEnum } from 'src/common/enums/userEnum';
+import { ProviderEnum, RoleEnum } from 'src/common/enums/userEnum';
+import { randomUUID } from 'crypto';
+import { TokenService } from 'src/common/services/tokenService';
+import { ConfirmDto } from './dto/confirm.dto';
+
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userRepo: UserRepo,
     private readonly redisService: RedisService,
+    private readonly tokenService: TokenService,
   ) { }
 
   async signUp(body: SignUpDto) {
@@ -27,6 +32,7 @@ export class AuthService {
     }
     if (profilePic) {
       //save image on cloud
+      // const uploadedImage = await UploadedFile(profilePic)
     }
 
     const user = await this.userRepo.create({
@@ -37,7 +43,7 @@ export class AuthService {
       age,
       password: hash({ text: password }),
       phone: encryptValue({ value: phone }),
-      profilePic
+      // profilePic: uploadedImage
     });
 
     const otp = generateOtp();
@@ -69,42 +75,86 @@ export class AuthService {
     return { user, otp };
   }
 
+  async signIn(body: LoginDto) {
+    let { email, password }: LoginDto = body;
 
-  login(body: LoginDto) {
-    const { email, password }: LoginDto = body;
-    return { email, password };
+    let user = await this.userRepo.findOne({
+      filter: {
+        email,
+        provider: ProviderEnum.system,
+        confirmed: true
+      }
+    })
+    if (!user) {
+      throw new BadRequestException("User is not exist")
+    }
+
+    if (!(await compare({ text: password, cipherTxt: user.password }))) {
+      throw new BadRequestException("invalid password")
+    }
+
+    const uuid = randomUUID()
+    const accessToken = this.tokenService.generateToken({
+      payload: {
+        email
+      },
+      options: {
+        secret: user.role == RoleEnum.user ? process.env.SECRET_KEY_USER : process.env.SECRET_KEY_ADMIN,
+        expiresIn: 60 * 60, jwtid: uuid
+      }
+    })
+
+    const refreshToken = this.tokenService.generateToken({
+      payload: {
+        email
+      },
+      options: {
+        secret: user.role == RoleEnum.user ? process.env.REFRESH_SECRET_KEY_USER : process.env.REFRESH_SECRET_KEY_ADMIN,
+        expiresIn: '1y', jwtid: uuid
+      }
+    })
+
+    return {
+      accessToken,
+      refreshToken
+    }
   }
 
 
+  async confirmEmail (body:ConfirmDto) {
+        const { email, otp }: ConfirmDto = body
 
+        const otpExist = await this.redisService.getValue(
+            this.redisService.otpKey({
+                email, subject: EmailEnum.confirmEmail
+            })
+        )
+        if (!otpExist) {
+            throw new BadRequestException("Expired OTP or Invalid email")
+        }
 
-  // confirmEmail = async (body:any) => {
-  //       const { email, otp } = body
+        if (!compare({ text: String(otp), cipherTxt: otpExist })) {
+            throw new BadRequestException("Invalid OTP")
+        }
 
-  //       const otpExist = await this.redisService.getValue(
-  //           this.redisService.otpKey({
-  //               email, subject: EmailEnum.confirmEmail
-  //           })
-  //       )
-  //       if (!otpExist) {
-  //           throw new BadRequestException("Expired OTP or Invalid email")
-  //       }
+        const user = await this.userRepo.findOneAndUpdate({
+            filter: {
+                email,
+                confirmed: false,
+                provider: ProviderEnum.system
+            },
+            update: { confirmed: true }
+        })
+        if (!user) {
+            throw new BadRequestException("User is not exist or already confirmed")
+        }
+        await this.redisService.delKey(this.redisService.otpKey({ email, subject: EmailEnum.confirmEmail }))
+        await this.redisService.delKey(this.redisService.maxOtp(email))
 
-  //       const user = await this.userRepo.findOneAndUpdate({
-  //           filter: {
-  //               email,
-  //               confirmed: false,
-  //               provider: ProviderEnum.system
-  //           },
-  //           update: { confirmed: true }
-  //       })
-  //       if (!user) {
-  //           throw new ConflictException("User is not exist or already confirmed")
-  //       }
-  //       await this.redisService.delKey(this.redisService.otpKey({ email, subject: EmailEnum.confirmEmail }))
-  //       await this.redisService.delKey(this.redisService.maxOtp(email))
+        return {
+            message: "Email confirmed",
+            data: user
+        }
+    }
 
-  //       return { user, message: "Email confirmed" }
-  //   }
-
-}
+  }
