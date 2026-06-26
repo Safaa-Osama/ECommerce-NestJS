@@ -89,7 +89,7 @@ export class AuthService {
       throw new BadRequestException("User is not exist")
     }
 
-    if (!( compare({ text: password, cipherTxt: user.password }))) {
+    if (!(compare({ text: password, cipherTxt: user.password }))) {
       throw new BadRequestException("invalid password")
     }
 
@@ -107,6 +107,8 @@ export class AuthService {
         expiresIn: 60 * 60, jwtid: uuid
       }
     })
+    console.log("ACCESS TOKEN:", accessToken);
+    console.log("DECODED:", this.tokenService.decodeToken(accessToken));
 
     const refreshToken = await this.tokenService.generateToken({
       payload: {

@@ -1,4 +1,4 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { Module} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
@@ -10,7 +10,6 @@ import { RedisModule } from './common/services/redis/redisModule';
 import { TokenService } from './common/services/token/tokenService';
 import RedisService from './common/services/redis/redis.service';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthMiddleware } from './middleware/authentication';
 
 @Module({
   imports: [
@@ -45,15 +44,7 @@ import { AuthMiddleware } from './middleware/authentication';
     AppService,
     TokenService,
     RedisService,
-    AuthMiddleware
   ],
   controllers: [AppController],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(AuthMiddleware)
-      .exclude('auth/(.*)')
-      .forRoutes('*');
-  }
-}
+export class AppModule {}
