@@ -1,13 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe,  } from '@nestjs/common';
+import { ValidationPipe, } from '@nestjs/common';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const port = process.env.PORT;
+  app.use(helmet());
+  app.enableCors()
 
-  app.useGlobalPipes(new ValidationPipe({whitelist: true, forbidNonWhitelisted: true}));
-  // app.useGlobalFilters(new HttpExceptionFilter());
+  const port = process.env.PORT;
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
 
   await app.listen(port!, () => {
     console.log(`server is running on port ${port}`);

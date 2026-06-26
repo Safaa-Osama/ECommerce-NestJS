@@ -11,7 +11,7 @@ import { eventEmitter } from 'src/common/services/mailService/email.event';
 import RedisService from 'src/common/services/redis/redis.service';
 import { ProviderEnum, RoleEnum } from 'src/common/enums/userEnum';
 import { randomUUID } from 'crypto';
-import { TokenService } from 'src/common/services/tokenService';
+import { TokenService } from 'src/common/services/token/tokenService';
 import { ConfirmDto } from './dto/confirm.dto';
 
 
@@ -89,27 +89,33 @@ export class AuthService {
       throw new BadRequestException("User is not exist")
     }
 
-    if (!(await compare({ text: password, cipherTxt: user.password }))) {
+    if (!( compare({ text: password, cipherTxt: user.password }))) {
       throw new BadRequestException("invalid password")
     }
 
+    const { ACCESS_SECRET_KEY, REFRESH_SECRET_KEY } = await this.tokenService.getSignature(user.role);
+
     const uuid = randomUUID()
-    const accessToken = this.tokenService.generateToken({
+    const accessToken = await this.tokenService.generateToken({
       payload: {
-        email
+        id: user._id,
+        email,
+        role: user.role
       },
       options: {
-        secret: user.role == RoleEnum.user ? process.env.SECRET_KEY_USER : process.env.SECRET_KEY_ADMIN,
+        secret: ACCESS_SECRET_KEY,
         expiresIn: 60 * 60, jwtid: uuid
       }
     })
 
-    const refreshToken = this.tokenService.generateToken({
+    const refreshToken = await this.tokenService.generateToken({
       payload: {
-        email
+        id: user._id,
+        email,
+        role: user.role
       },
       options: {
-        secret: user.role == RoleEnum.user ? process.env.REFRESH_SECRET_KEY_USER : process.env.REFRESH_SECRET_KEY_ADMIN,
+        secret: REFRESH_SECRET_KEY,
         expiresIn: '1y', jwtid: uuid
       }
     })
@@ -121,40 +127,40 @@ export class AuthService {
   }
 
 
-  async confirmEmail (body:ConfirmDto) {
-        const { email, otp }: ConfirmDto = body
+  async confirmEmail(body: ConfirmDto) {
+    const { email, otp }: ConfirmDto = body
 
-        const otpExist = await this.redisService.getValue(
-            this.redisService.otpKey({
-                email, subject: EmailEnum.confirmEmail
-            })
-        )
-        if (!otpExist) {
-            throw new BadRequestException("Expired OTP or Invalid email")
-        }
-
-        if (!compare({ text: String(otp), cipherTxt: otpExist })) {
-            throw new BadRequestException("Invalid OTP")
-        }
-
-        const user = await this.userRepo.findOneAndUpdate({
-            filter: {
-                email,
-                confirmed: false,
-                provider: ProviderEnum.system
-            },
-            update: { confirmed: true }
-        })
-        if (!user) {
-            throw new BadRequestException("User is not exist or already confirmed")
-        }
-        await this.redisService.delKey(this.redisService.otpKey({ email, subject: EmailEnum.confirmEmail }))
-        await this.redisService.delKey(this.redisService.maxOtp(email))
-
-        return {
-            message: "Email confirmed",
-            data: user
-        }
+    const otpExist = await this.redisService.getValue(
+      this.redisService.otpKey({
+        email, subject: EmailEnum.confirmEmail
+      })
+    )
+    if (!otpExist) {
+      throw new BadRequestException("Expired OTP or Invalid email")
     }
 
+    if (!compare({ text: String(otp), cipherTxt: otpExist })) {
+      throw new BadRequestException("Invalid OTP")
+    }
+
+    const user = await this.userRepo.findOneAndUpdate({
+      filter: {
+        email,
+        confirmed: false,
+        provider: ProviderEnum.system
+      },
+      update: { confirmed: true }
+    })
+    if (!user) {
+      throw new BadRequestException("User is not exist or already confirmed")
+    }
+    await this.redisService.delKey(this.redisService.otpKey({ email, subject: EmailEnum.confirmEmail }))
+    await this.redisService.delKey(this.redisService.maxOtp(email))
+
+    return {
+      message: "Email confirmed",
+      data: user
+    }
   }
+
+}

@@ -1,31 +1,32 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import userModel from 'src/database/models/user.model';
 import { UserRepo } from 'src/database/reposetories/user-repo';
-import { createClient } from 'redis';
+import { AuthMiddleware } from 'src/middleware/authentication';
+import { JwtService } from '@nestjs/jwt';
+import { TokenService } from 'src/common/services/token/tokenService';
+import RedisService from 'src/common/services/redis/redis.service';
 
 @Module({
   imports: [userModel],
   controllers: [UsersController],
-  providers: [UsersService,UserRepo,
-    {
-       provide: "REDIS_CLIENT",
-              useFactory: async () => {
-                  const redis = createClient({ url: process.env.REDIS_URI })
-      
-                  await redis.connect();
-                  redis.on("error", (err) => {
-                      console.log(err)
-                  })
-                  return redis
-              }
-    }
+  providers: [
+    UsersService,
+    UserRepo,
+    TokenService,
+    JwtService,
+    RedisService,
   ],
   exports: [
     UsersService,
     UserRepo
   ],
 })
-export class UsersModule {}
-
+export class UsersModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthMiddleware)
+      .forRoutes('users/*');
+  }
+}

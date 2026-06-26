@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
@@ -7,9 +7,10 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { RedisModule } from './common/services/redis/redisModule';
-import { TokenService } from './common/services/tokenService';
+import { TokenService } from './common/services/token/tokenService';
 import RedisService from './common/services/redis/redis.service';
-import { AuthenticationService } from './middleware/authentication';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthMiddleware } from './middleware/authentication';
 
 @Module({
   imports: [
@@ -18,7 +19,10 @@ import { AuthenticationService } from './middleware/authentication';
       envFilePath: ['.env.development', '.env.production'],
       isGlobal: true,
     }),
-    
+    JwtModule.register({
+      global: true,
+    }),
+
     // mongo db
     MongooseModule.forRoot(process.env.DB_LOCAL!, {
       onConnectionCreate: (connection: Connection) => {
@@ -41,8 +45,15 @@ import { AuthenticationService } from './middleware/authentication';
     AppService,
     TokenService,
     RedisService,
-    AuthenticationService
+    AuthMiddleware
   ],
   controllers: [AppController],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthMiddleware)
+      .exclude('auth/(.*)')
+      .forRoutes('*');
+  }
+}

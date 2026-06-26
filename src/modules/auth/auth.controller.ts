@@ -15,29 +15,14 @@ export class AuthController {
     return '<h1> Auth Page </h1>';
   }
 
- 
-// @Post('file')
-// uploadFileAndPassValidation(
-//   @Body() body: SignUpDto,
-//   @UploadedFile(
-//     new ParseFilePipe()
-//   )
-//   file: Express.Multer.File,
-// ) {
-//   return {
-//     body,
-//     file: file.buffer.toString(),
-//   };
-// }
+  @Post('sign-up')
+  signUp(@Body() body: SignUpDto) {
+    return this.authService.signUp(body);
+  }
 
-@Post('sign-up')
-signUp(@Body() body: SignUpDto) {
-  return this.authService.signUp(body) ;
-}
-
-@Post('sign-in')
-login(@Body() body: LoginDto) {
-  return this.authService.login(body) ;
-}
+  @Post('sign-in')
+  login(@Body() body: LoginDto) {
+    return this.authService.signIn(body);
+  }
 
 }
