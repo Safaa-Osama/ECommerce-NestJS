@@ -1,21 +1,27 @@
 
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { Observable } from 'rxjs';
 import { TokenService } from '../services/token/tokenService';
 import { UserRepo } from 'src/database/reposetories/user-repo';
 import RedisService from '../services/redis/redis.service';
+import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
 
 
   constructor(
-    public readonly tokenService: TokenService,
-    public readonly userRepo: UserRepo,
-    public readonly redisService: RedisService,
+    private readonly tokenService: TokenService,
+    private readonly userRepo: UserRepo,
+    private readonly redisService: RedisService,
+    private readonly reflector: Reflector,
   ) { }
 
-  async canActivate(context: ExecutionContext): Promise<boolean>{
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const tokenType = this.reflector.get('tokenType', context.getHandler());
+    if (tokenType) {
+    console.log({ tokenType });
+    }
+    
     let request: any = null;
     let authorization: string = ""
 
@@ -32,28 +38,25 @@ export class AuthGuard implements CanActivate {
     }
 
     if (!authorization) {
-            throw new UnauthorizedException("Authorization token is required");
-        }
-        const token = authorization.split(" ")[1];
-        console.log({token});
-        
+      throw new UnauthorizedException("Authorization token is required");
+    }
+    const token = authorization.split(" ")[1];
+    if (!token) {
+      throw new UnauthorizedException("Token not found");
+    }
 
-        if (!token) {
-            throw new UnauthorizedException("Token not found");
-        }
+    const decodedPayload = await this.tokenService.decodeToken(token);
+    console.log({ decodedPayload });
 
-            const decodedPayload = await this.tokenService.decodeToken(token);
-            console.log({decodedPayload});
-            
-            if (!decodedPayload || !decodedPayload.role) {
-                throw new UnauthorizedException("Invalid token payload, role is missing");
-            }
+    if (!decodedPayload || !decodedPayload.role) {
+      throw new UnauthorizedException("Invalid token payload, role is missing");
+    }
 
-            const { ACCESS_SECRET_KEY } = await this.tokenService.getSignature(decodedPayload.role);
-            const { user, decoded } = await this.tokenService.authenticateToken_fetchUser(token, ACCESS_SECRET_KEY);
+    const { ACCESS_SECRET_KEY } = await this.tokenService.getSignature(decodedPayload.role);
+    const { user, decoded } = await this.tokenService.authenticateToken_fetchUser(token, ACCESS_SECRET_KEY);
 
-            request.user = user;
-            request.decoded = decoded;
+    request.user = user;
+    request.decoded = decoded;
 
     return true;
   }

@@ -18,9 +18,6 @@ import { JwtModule } from '@nestjs/jwt';
       envFilePath: ['.env.development', '.env.production'],
       isGlobal: true,
     }),
-    JwtModule.register({
-      global: true,
-    }),
 
     // mongo db
     MongooseModule.forRoot(process.env.DB_LOCAL!, {
@@ -36,7 +33,10 @@ import { JwtModule } from '@nestjs/jwt';
     }),
     AuthModule,
     UsersModule,
-    RedisModule
+    RedisModule,
+    JwtModule.register({
+      global: true,
+    }),
   ],
 
   exports: [],
