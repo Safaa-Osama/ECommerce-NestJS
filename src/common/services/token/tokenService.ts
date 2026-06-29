@@ -27,14 +27,14 @@ export class TokenService {
         return this.jwtService.verifyAsync(token, options);
     }
 
-    async getSignature(role: RoleEnum) {
+    async getSignature(prefix: string) {
         let ACCESS_SECRET_KEY: string = "";
         let REFRESH_SECRET_KEY: string = "";
 
-        if (role === RoleEnum.user) {
+        if (prefix === process.env.PREFIX_USER) {
             ACCESS_SECRET_KEY = process.env.SECRET_KEY_USER!;
             REFRESH_SECRET_KEY = process.env.REFRESH_SECRET_KEY_USER!;
-        } else if (role === RoleEnum.admin) {
+        } else if (prefix === process.env.PREFIX_ADMIN) {
             ACCESS_SECRET_KEY = process.env.SECRET_KEY_ADMIN!;
             REFRESH_SECRET_KEY = process.env.REFRESH_SECRET_KEY_ADMIN!;
         } else {
@@ -42,10 +42,6 @@ export class TokenService {
         }
 
         return { ACCESS_SECRET_KEY, REFRESH_SECRET_KEY }
-    }
-
-    decodeToken(token: string): any {
-        return this.jwtService.decode(token);
     }
 
 

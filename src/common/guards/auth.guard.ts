@@ -22,41 +22,34 @@ export class AuthGuard implements CanActivate {
     console.log({ tokenType });
     }
     
-    let request: any = null;
+    let req: any = null;
     let authorization: string = ""
 
     if (context.getType() == "http") {
-      request = context.switchToHttp().getRequest();
-      authorization = request?.headers?.authorization;
+      req = context.switchToHttp().getRequest();
+      authorization = req?.headers?.authorization;
       console.log({ authorization });
     }
     else if (context.getType() == "ws") {
-      request = context.switchToWs().getClient();
+      req = context.switchToWs().getClient();
     }
     else if (context.getType() == "rpc") {
-      request = context.switchToRpc().getContext();
+      req = context.switchToRpc().getContext();
     }
 
     if (!authorization) {
       throw new UnauthorizedException("Authorization token is required");
     }
-    const token = authorization.split(" ")[1];
-    if (!token) {
-      throw new UnauthorizedException("Token not found");
+    const [prefix, token] = authorization.split(" ");
+    if (!token || !prefix) {
+      throw new UnauthorizedException("Invalid authorization token");
     }
 
-    const decodedPayload = await this.tokenService.decodeToken(token);
-    console.log({ decodedPayload });
-
-    if (!decodedPayload || !decodedPayload.role) {
-      throw new UnauthorizedException("Invalid token payload, role is missing");
-    }
-
-    const { ACCESS_SECRET_KEY } = await this.tokenService.getSignature(decodedPayload.role);
+    const { ACCESS_SECRET_KEY, REFRESH_SECRET_KEY } = await this.tokenService.getSignature(prefix);
     const { user, decoded } = await this.tokenService.authenticateToken_fetchUser(token, ACCESS_SECRET_KEY);
 
-    request.user = user;
-    request.decoded = decoded;
+    req.user = user;
+    req.decoded = decoded;
 
     return true;
   }

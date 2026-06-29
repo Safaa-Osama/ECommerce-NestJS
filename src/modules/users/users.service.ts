@@ -16,6 +16,6 @@ export class UsersService {
         const user = await this.userRepo.findOne({
             filter: { _id: req?.user?._id }
         })
-        return user;
+        return {user};
     }
 }

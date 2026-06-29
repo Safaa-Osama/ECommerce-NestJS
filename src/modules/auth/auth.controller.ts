@@ -1,7 +1,7 @@
 import { Body, Controller, Get, ParseFilePipe, Post, UploadedFile, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignUpDto } from './dto/signUp.dto';
-import { LoginDto } from './dto/login.dto';
+import { SignUpDto, LoginDto, ConfirmDto } from './dto/signUp.dto';
+
 
 @Controller('auth')
 export class AuthController {
@@ -23,6 +23,11 @@ export class AuthController {
   @Post('sign-in')
   login(@Body() body: LoginDto) {
     return this.authService.signIn(body);
+  }
+
+  @Post('confirm-email')
+  confirmEmail(@Body() body: ConfirmDto) {
+    return this.authService.confirmEmail(body);
   }
 
 }

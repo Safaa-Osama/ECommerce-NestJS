@@ -1,6 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, UploadedFile } from '@nestjs/common';
-import { SignUpDto } from './dto/signUp.dto';
-import { LoginDto } from './dto/login.dto';
+import { SignUpDto, LoginDto, ConfirmDto } from './dto/signUp.dto';
 import { compare, hash } from 'src/common/security/hash';
 import { encryptValue } from 'src/common/security/encript';
 import { UserRepo } from 'src/database/reposetories/user-repo';
@@ -9,10 +8,9 @@ import { generateOtp, sendMail } from 'src/common/services/mailService/sendMail'
 import { emailTemplete } from 'src/common/services/mailService/mailTemplete';
 import { eventEmitter } from 'src/common/services/mailService/email.event';
 import RedisService from 'src/common/services/redis/redis.service';
-import { ProviderEnum, RoleEnum } from 'src/common/enums/userEnum';
+import { ProviderEnum } from 'src/common/enums/userEnum';
 import { randomUUID } from 'crypto';
 import { TokenService } from 'src/common/services/token/tokenService';
-import { ConfirmDto } from './dto/confirm.dto';
 
 
 @Injectable()
@@ -50,24 +48,24 @@ export class AuthService {
 
     const isBlocked = await this.redisService.ttl(this.redisService.blockOtp(email))
     if (isBlocked && isBlocked > 0) {
-      throw new Error(`You are blocked, Try again after ${isBlocked} seconds`)
+      throw new BadRequestException(`You are blocked, Try again after ${isBlocked} seconds`)
     }
 
     const ttl = await this.redisService.ttl(this.redisService.otpKey({ email, subject: EmailEnum.confirmEmail }));
     if (ttl && ttl > 0) {
-      throw new Error(`can not sent OTP after ${ttl} seconds`)
+      throw new BadRequestException(`can not sent OTP after ${ttl} seconds`)
     }
 
     const maximumOtp = await this.redisService.getValue(this.redisService.maxOtp(email))
     if (maximumOtp > 3) {
       await this.redisService.setValue({ key: this.redisService.blockOtp(email), value: "1", ttl: 60 * 3 })
-      throw new Error("you have exceeded the maximum number of tries")
+      throw new BadRequestException("you have exceeded the maximum number of tries")
     }
 
     eventEmitter.emit(EmailEnum.confirmEmail, async () => {
       await sendMail({
         to: email,
-        subject: "Welcome to SocailMedia-App",
+        subject: "Welcome to Ecommerce-App",
         html: emailTemplete({ otp, userName })
       });
     });
@@ -99,22 +97,18 @@ export class AuthService {
     const accessToken = await this.tokenService.generateToken({
       payload: {
         id: user._id,
-        email,
-        role: user.role
+        email
       },
       options: {
         secret: ACCESS_SECRET_KEY,
         expiresIn: 60 * 60, jwtid: uuid
       }
     })
-    console.log("ACCESS TOKEN:", accessToken);
-    console.log("DECODED:", this.tokenService.decodeToken(accessToken));
 
     const refreshToken = await this.tokenService.generateToken({
       payload: {
         id: user._id,
-        email,
-        role: user.role
+        email
       },
       options: {
         secret: REFRESH_SECRET_KEY,
@@ -127,8 +121,6 @@ export class AuthService {
       refreshToken
     }
   }
-
-
   async confirmEmail(body: ConfirmDto) {
     const { email, otp }: ConfirmDto = body
 
@@ -165,4 +157,5 @@ export class AuthService {
     }
   }
 
-}
+
+} 
