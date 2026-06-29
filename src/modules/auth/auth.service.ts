@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, UploadedFile } from '@nestjs/common';
-import { SignUpDto, LoginDto, ConfirmDto } from './dto/signUp.dto';
+import { SignUpDto, LoginDto, ConfirmDto, EmailDto } from './dto/auth.dto';
 import { compare, hash } from 'src/common/security/hash';
 import { encryptValue } from 'src/common/security/encript';
 import { UserRepo } from 'src/database/reposetories/user-repo';
@@ -21,30 +21,8 @@ export class AuthService {
     private readonly tokenService: TokenService,
   ) { }
 
-  async signUp(body: SignUpDto) {
-    const { userName, role, gender, email, age, password, cPassword, profilePic, phone } = body;
-    const emailExist = await this.userRepo.findOne({ filter: { email } });
 
-    if (emailExist) {
-      throw new ConflictException('email already exist');
-    }
-    if (profilePic) {
-      //save image on cloud
-      // const uploadedImage = await UploadedFile(profilePic)
-    }
-
-    const user = await this.userRepo.create({
-      userName,
-      role,
-      gender,
-      email,
-      age,
-      password: hash({ text: password }),
-      phone: encryptValue({ value: phone }),
-      // profilePic: uploadedImage
-    });
-
-    const otp = generateOtp();
+  sendEmail = async ({ email, subject }: { email: string, subject: EmailEnum }) => {
 
     const isBlocked = await this.redisService.ttl(this.redisService.blockOtp(email))
     if (isBlocked && isBlocked > 0) {
@@ -62,15 +40,54 @@ export class AuthService {
       throw new BadRequestException("you have exceeded the maximum number of tries")
     }
 
+    const otp = await generateOtp();
     eventEmitter.emit(EmailEnum.confirmEmail, async () => {
       await sendMail({
         to: email,
-        subject: "Welcome to Ecommerce-App",
-        html: emailTemplete({ otp, userName })
-      });
+        subject: "Ecommerce-App",
+        html: emailTemplete({ otp })
+      })
+    }
+    )
+
+    await this.redisService.setValue({
+      key: this.redisService.otpKey({ email, subject: EmailEnum.confirmEmail }),
+      value: hash({ text: `${otp}` }),
+      ttl: 60 * 3
     });
 
-    return { user, otp };
+    await this.redisService.inc(this.redisService.maxOtp(email))
+  }
+
+  async signUp(body: SignUpDto) {
+    const { userName, role, gender, email, age, password, cPassword, profilePic, phone } = body;
+    const emailExist = await this.userRepo.findOne({ filter: { email } });
+
+    if (emailExist) {
+      throw new ConflictException('email already exist');
+    }
+
+    // upload profile picture
+    if (profilePic) {
+      //save image on cloud
+      // const uploadedImage = await UploadedFile(profilePic)
+    }
+
+    const user = await this.userRepo.create({
+      userName,
+      role,
+      gender,
+      email,
+      age,
+      password: hash({ text: password }),
+      phone: encryptValue({ value: phone }),
+      // profilePic: uploadedImage
+    });
+
+    //send Email
+    await this.sendEmail({ email, subject: EmailEnum.confirmEmail })
+
+    return { user };
   }
 
   async signIn(body: LoginDto) {
@@ -80,7 +97,7 @@ export class AuthService {
       filter: {
         email,
         provider: ProviderEnum.system,
-        confirmed: true
+        confirmed: false
       }
     })
     if (!user) {
@@ -91,8 +108,6 @@ export class AuthService {
       throw new BadRequestException("invalid password")
     }
 
-    const { ACCESS_SECRET_KEY, REFRESH_SECRET_KEY } = await this.tokenService.getSignature(user.role);
-
     const uuid = randomUUID()
     const accessToken = await this.tokenService.generateToken({
       payload: {
@@ -100,7 +115,7 @@ export class AuthService {
         email
       },
       options: {
-        secret: ACCESS_SECRET_KEY,
+        secret: process.env.ACCESS_SECRET_KEY,
         expiresIn: 60 * 60, jwtid: uuid
       }
     })
@@ -111,7 +126,7 @@ export class AuthService {
         email
       },
       options: {
-        secret: REFRESH_SECRET_KEY,
+        secret: process.env.REFRESH_SECRET_KEY,
         expiresIn: '1y', jwtid: uuid
       }
     })
@@ -121,6 +136,7 @@ export class AuthService {
       refreshToken
     }
   }
+
   async confirmEmail(body: ConfirmDto) {
     const { email, otp }: ConfirmDto = body
 
@@ -158,4 +174,21 @@ export class AuthService {
   }
 
 
-} 
+  async resendOtp(body: EmailDto) {
+
+    const { email }: EmailDto = body
+
+    const user = await this.userRepo.findOne({
+      filter: { email, confirmed: true, provider: ProviderEnum.system }
+    })
+
+    if (!user) {
+      throw new BadRequestException("User is not exist or Emial is not confirmed")
+    }
+
+    await this.sendEmail({ email, subject: EmailEnum.confirmEmail })
+
+    return { message: "Otp send again" }
+  }
+
+}

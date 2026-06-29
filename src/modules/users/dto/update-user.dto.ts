@@ -1,5 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { SignUpDto } from 'src/modules/auth/dto/signUp.dto';
+import { SignUpDto } from 'src/modules/auth/dto/auth.dto';
 import {
   IsEmail,
   IsEnum,

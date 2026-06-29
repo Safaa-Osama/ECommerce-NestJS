@@ -1,5 +1,5 @@
 
-export const emailTemplete = function ({ otp, userName }: { otp: number; userName: string }) {
+export const emailTemplete = function ({ otp, userName }: { otp: number; userName?: string }) {
   
   return `<!DOCTYPE html>
 <html lang="en">

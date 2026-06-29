@@ -1,31 +1,20 @@
 import {
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsPhoneNumber,
-  IsString,
-  IsStrongPassword,
-  Length,
-  Min,
-  ValidateIf,
+  IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPhoneNumber, IsString, IsStrongPassword, Length, Min, ValidateIf,
 } from 'class-validator';
 import { IsMatch } from 'src/common/pipes/user.pipe';
 import { GenderEnum, RoleEnum } from 'src/common/enums/userEnum';
 
-export class LoginDto {
+export class EmailDto {
   @IsEmail()
   email: string;
+}
 
+export class LoginDto extends EmailDto {
   @IsStrongPassword()
   password: string;
 }
 
-export class ConfirmDto {
-  @IsEmail()
-  email: string;
-
+export class ConfirmDto extends EmailDto {
   @IsNumber()
   otp: number;
 }
@@ -33,7 +22,7 @@ export class ConfirmDto {
 export class SignUpDto extends LoginDto {
   @IsString()
   @IsNotEmpty()
-  @Length(3,25)
+  @Length(3, 25)
   userName: string;
 
   @IsMatch(['password'])
