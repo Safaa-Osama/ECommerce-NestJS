@@ -4,6 +4,19 @@ import {
 import { IsMatch } from 'src/common/pipes/user.pipe';
 import { GenderEnum, RoleEnum } from 'src/common/enums/userEnum';
 
+export class UpdatePassDto {
+  @IsStrongPassword()
+  newPassword: string;
+
+  @IsStrongPassword()
+  @IsMatch(['password'])
+  @ValidateIf((obj) => obj.password)
+  cPassword: string;
+
+  @IsStrongPassword()
+  oldPassword: string;
+}
+
 export class EmailDto {
   @IsEmail()
   email: string;
@@ -17,6 +30,15 @@ export class LoginDto extends EmailDto {
 export class ConfirmDto extends EmailDto {
   @IsNumber()
   otp: number;
+}
+
+export class ResetPasswordDto extends LoginDto {
+  @IsNumber()
+  otp: number;
+
+  @IsMatch(['password'])
+  @ValidateIf((obj) => obj.password)
+  cPassword: string;
 }
 
 export class SignUpDto extends LoginDto {

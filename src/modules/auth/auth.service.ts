@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, UploadedFile } from '@nestjs/common';
-import { SignUpDto, LoginDto, ConfirmDto, EmailDto } from './dto/auth.dto';
+import { SignUpDto, LoginDto, ConfirmDto, EmailDto, UpdatePassDto, ResetPasswordDto } from './dto/auth.dto';
 import { compare, hash } from 'src/common/security/hash';
 import { encryptValue } from 'src/common/security/encript';
 import { UserRepo } from 'src/database/reposetories/user-repo';
@@ -11,6 +11,7 @@ import RedisService from 'src/common/services/redis/redis.service';
 import { ProviderEnum } from 'src/common/enums/userEnum';
 import { randomUUID } from 'crypto';
 import { TokenService } from 'src/common/services/token/tokenService';
+import { Types } from 'mongoose';
 
 
 @Injectable()
@@ -29,7 +30,7 @@ export class AuthService {
       throw new BadRequestException(`You are blocked, Try again after ${isBlocked} seconds`)
     }
 
-    const ttl = await this.redisService.ttl(this.redisService.otpKey({ email, subject: EmailEnum.confirmEmail }));
+    const ttl = await this.redisService.ttl(this.redisService.otpKey({ email, subject }));
     if (ttl && ttl > 0) {
       throw new BadRequestException(`can not sent OTP after ${ttl} seconds`)
     }
@@ -41,7 +42,7 @@ export class AuthService {
     }
 
     const otp = await generateOtp();
-    eventEmitter.emit(EmailEnum.confirmEmail, async () => {
+    eventEmitter.emit(subject, async () => {
       await sendMail({
         to: email,
         subject: "Ecommerce-App",
@@ -51,7 +52,7 @@ export class AuthService {
     )
 
     await this.redisService.setValue({
-      key: this.redisService.otpKey({ email, subject: EmailEnum.confirmEmail }),
+      key: this.redisService.otpKey({ email, subject }),
       value: hash({ text: `${otp}` }),
       ttl: 60 * 3
     });
@@ -96,8 +97,7 @@ export class AuthService {
     let user = await this.userRepo.findOne({
       filter: {
         email,
-        provider: ProviderEnum.system,
-        confirmed: false
+        provider: ProviderEnum.system
       }
     })
     if (!user) {
@@ -116,7 +116,8 @@ export class AuthService {
       },
       options: {
         secret: process.env.ACCESS_SECRET_KEY,
-        expiresIn: 60 * 60, jwtid: uuid
+        expiresIn: 60 * 60,
+        jwtid: uuid
       }
     })
 
@@ -127,7 +128,8 @@ export class AuthService {
       },
       options: {
         secret: process.env.REFRESH_SECRET_KEY,
-        expiresIn: '1y', jwtid: uuid
+        expiresIn: '1y',
+        jwtid: uuid
       }
     })
 
@@ -156,10 +158,10 @@ export class AuthService {
     const user = await this.userRepo.findOneAndUpdate({
       filter: {
         email,
-        confirmed: false,
+        confirmEmail: false,
         provider: ProviderEnum.system
       },
-      update: { confirmed: true }
+      update: { confirmEmail: true }
     })
     if (!user) {
       throw new BadRequestException("User is not exist or already confirmed")
@@ -167,19 +169,15 @@ export class AuthService {
     await this.redisService.delKey(this.redisService.otpKey({ email, subject: EmailEnum.confirmEmail }))
     await this.redisService.delKey(this.redisService.maxOtp(email))
 
-    return {
-      message: "Email confirmed",
-      data: user
-    }
-  }
-
+    return {  message: "Email confirmed"} }
+    
 
   async resendOtp(body: EmailDto) {
 
     const { email }: EmailDto = body
 
     const user = await this.userRepo.findOne({
-      filter: { email, confirmed: true, provider: ProviderEnum.system }
+      filter: { email, confirmEmail: true, provider: ProviderEnum.system }
     })
 
     if (!user) {
@@ -191,4 +189,68 @@ export class AuthService {
     return { message: "Otp send again" }
   }
 
+  async updatePassword(userId: Types.ObjectId, body: UpdatePassDto) {
+    let { newPassword, oldPassword, cPassword }: UpdatePassDto = body
+
+    const user = await this.userRepo.findOne({
+      filter: {
+        _id: userId,
+        provider: ProviderEnum.system,
+        confirmEmail: true
+      }
+    })
+    if (!user) {
+      throw new BadRequestException("User is not exist or invalid provider")
+    }
+
+    if (!compare({ text: oldPassword, cipherTxt: user.password })) {
+      throw new BadRequestException("invalid old password")
+    }
+
+    if (newPassword != cPassword) {
+      throw new BadRequestException("Wrong password")
+    }
+    await this.userRepo.findOneAndUpdate({
+      filter: { _id: userId },
+      update: { password: hash({ text: newPassword }) }
+    })
+
+    return { message: "Password updated successfully" }
+  }
+
+
+
+  async resetPassword(body: ResetPasswordDto) {
+    const { email, otp, password } = body;
+
+    const otpExist = await this.redisService.getValue(
+      this.redisService.otpKey({
+        email, subject: EmailEnum.forgetPassword
+      })
+    )
+    if (!otpExist) {
+      throw new BadRequestException("Expired OTP or Invalid email")
+    }
+
+    if (!compare({ text: String(otp), cipherTxt: otpExist })) {
+      throw new BadRequestException("Invalid OTP")
+    }
+
+    const user = await this.userRepo.findOneAndUpdate({
+      filter: {
+        email,
+        confirmEmail: true,
+        provider: ProviderEnum.system
+      },
+      update: { password: hash({ text: password }) }
+    })
+    if (!user) {
+      throw new BadRequestException("User is not exist or not confirmed")
+    }
+
+    await this.redisService.delKey(this.redisService.otpKey({ email, subject: EmailEnum.forgetPassword }))
+    await this.redisService.delKey(this.redisService.maxOtp(email))
+
+    return { message: "Password updated successfully" }
+  }
 }

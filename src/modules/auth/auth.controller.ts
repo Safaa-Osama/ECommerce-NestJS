@@ -1,6 +1,9 @@
-import { Body, Controller, Get, ParseFilePipe, Post, UploadedFile, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseFilePipe, Post, UploadedFile, UsePipes, ValidationPipe, Req, SetMetadata, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignUpDto, LoginDto, ConfirmDto } from './dto/auth.dto';
+import { SignUpDto, LoginDto, ConfirmDto, EmailDto, UpdatePassDto, ResetPasswordDto } from './dto/auth.dto';
+import { Types } from 'mongoose';
+import { AuthGuard } from 'src/common/guards/auth.guard';
+import { TokenEnum } from 'src/common/enums/tokenEnum';
 
 
 @Controller('auth')
@@ -30,4 +33,16 @@ export class AuthController {
     return this.authService.confirmEmail(body);
   }
 
+  @Post('resend-otp')
+  resendOtp(@Body() body: EmailDto) {
+    return this.authService.resendOtp(body);
+  }
+
+
+  @Post('reset-password')
+  resetPassword(@Body() body: ResetPasswordDto) {
+    return this.authService.resetPassword(body);
+  }
+
+ 
 }
