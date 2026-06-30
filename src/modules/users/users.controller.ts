@@ -1,25 +1,26 @@
-import {Controller, Get, Req, SetMetadata, UseGuards} from '@nestjs/common';
+import { Controller, Get, Req, SetMetadata, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import type { Request } from 'express';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 import { TokenEnum } from 'src/common/enums/tokenEnum';
+import type { IRequest } from 'src/utilis/types/request.type';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly _usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
 
   @Get()
-  getAllUsers(){
-      return this._usersService.getAllUsers();
+  getAllUsers() {
+    return this.usersService.getAllUsers();
   }
 
   @Get('profile')
   @SetMetadata('tokenType', TokenEnum.accessToken)
   @UseGuards(AuthGuard)
-  getProfile(@Req() req:Request){
-      return this._usersService.getProfile(req);
+  getProfile(@Req() req:IRequest){
+      return this.usersService.getProfile(req);
   }
+  
 }
 
 

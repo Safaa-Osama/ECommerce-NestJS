@@ -1,7 +1,7 @@
-import { BadRequestException, ConflictException, Injectable, UploadedFile } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { SignUpDto, LoginDto, ConfirmDto, EmailDto, UpdatePassDto, ResetPasswordDto } from './dto/auth.dto';
-import { compare, hash } from 'src/common/security/hash';
-import { encryptValue } from 'src/common/security/encript';
+import { compare, hash } from '../../common/services/securityService/hash';
+import { encryptValue } from '../../common/services/securityService/encript';
 import { UserRepo } from 'src/database/reposetories/user-repo';
 import { EmailEnum } from 'src/common/enums/emailEnum';
 import { generateOtp, sendMail } from 'src/common/services/mailService/sendMail';
@@ -207,9 +207,6 @@ export class AuthService {
       throw new BadRequestException("invalid old password")
     }
 
-    if (newPassword != cPassword) {
-      throw new BadRequestException("Wrong password")
-    }
     await this.userRepo.findOneAndUpdate({
       filter: { _id: userId },
       update: { password: hash({ text: newPassword }) }
@@ -217,8 +214,6 @@ export class AuthService {
 
     return { message: "Password updated successfully" }
   }
-
-
 
   async resetPassword(body: ResetPasswordDto) {
     const { email, otp, password } = body;
@@ -251,6 +246,6 @@ export class AuthService {
     await this.redisService.delKey(this.redisService.otpKey({ email, subject: EmailEnum.forgetPassword }))
     await this.redisService.delKey(this.redisService.maxOtp(email))
 
-    return { message: "Password updated successfully" }
+    return { message: "Password changed successfully" }
   }
 }

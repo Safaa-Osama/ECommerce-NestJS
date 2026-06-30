@@ -1,10 +1,4 @@
-import {
-    ValidatorConstraint,
-    ValidatorConstraintInterface,
-    ValidationArguments,
-    registerDecorator,
-    ValidationOptions,
-} from 'class-validator';
+import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments, registerDecorator, ValidationOptions, } from 'class-validator';
 
 @ValidatorConstraint({ name: 'matchText', async: false })
 export class matchText implements ValidatorConstraintInterface {
@@ -13,20 +7,18 @@ export class matchText implements ValidatorConstraintInterface {
     }
 
     defaultMessage(args: ValidationArguments) {
-        return `${args.property} doesn't match ${args.constraints[0]}`;
+        return `${args.property} doesn't match the ${args.constraints[0]}`;
     }
 }
 
-export function IsMatch(
-    constraints: string[],
-    validationOptions?: ValidationOptions,
-) {
+export function IsMatch(constraints: string[], validationOptions?: ValidationOptions) {
+
     return function (object: object, propertyName: string) {
         registerDecorator({
             target: object.constructor,
             propertyName: propertyName,
             options: validationOptions,
-            constraints,
+            constraints, 
             validator: matchText,
         });
     };

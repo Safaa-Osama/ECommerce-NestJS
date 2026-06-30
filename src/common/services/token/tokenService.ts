@@ -1,8 +1,7 @@
-import {  BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 import { UserRepo } from 'src/database/reposetories/user-repo';
 import RedisService from '../redis/redis.service';
-import { RoleEnum } from 'src/common/enums/userEnum';
 
 @Injectable()
 export class TokenService {

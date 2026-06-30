@@ -4,6 +4,7 @@ import { TokenService } from '../services/token/tokenService';
 import { UserRepo } from 'src/database/reposetories/user-repo';
 import RedisService from '../services/redis/redis.service';
 import { Reflector } from '@nestjs/core';
+import { IRequest } from 'src/utilis/types/request.type';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -19,11 +20,11 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const tokenType = this.reflector.get('tokenType', context.getHandler());
     if (tokenType) {
-    console.log({ tokenType });
+      console.log({ tokenType });
     }
-    
-    let req: any = null;
-    let authorization: string = ""
+
+    let req!: IRequest | any
+    let authorization: string | undefined
 
     if (context.getType() == "http") {
       req = context.switchToHttp().getRequest();

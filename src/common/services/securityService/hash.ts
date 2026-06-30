@@ -17,5 +17,5 @@ export function compare({
   text: string;
   cipherTxt: string;
 }): boolean {
-  return compareSync(text, cipherTxt);
+  return compareSync(text.toString(), cipherTxt.toString());
 }

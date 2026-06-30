@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Request } from 'express';
 import { UserRepo } from 'src/database/reposetories/user-repo';
+import type { IRequest } from 'src/utilis/types/request.type';
 
 @Injectable()
 export class UsersService {
@@ -12,10 +12,7 @@ export class UsersService {
     }
 
 
-    getProfile = async (req: Request) => {
-        const user = await this.userRepo.findOne({
-            filter: { _id: req?.user?._id }
-        })
-        return {user};
+    getProfile = async (req: IRequest) => {
+        return { user: req?.user };
     }
 }

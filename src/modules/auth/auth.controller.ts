@@ -1,9 +1,6 @@
-import { Body, Controller, Get, Param, ParseFilePipe, Post, UploadedFile, UsePipes, ValidationPipe, Req, SetMetadata, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignUpDto, LoginDto, ConfirmDto, EmailDto, UpdatePassDto, ResetPasswordDto } from './dto/auth.dto';
-import { Types } from 'mongoose';
-import { AuthGuard } from 'src/common/guards/auth.guard';
-import { TokenEnum } from 'src/common/enums/tokenEnum';
+import { SignUpDto, LoginDto, ConfirmDto, EmailDto, ResetPasswordDto } from './dto/auth.dto';
 
 
 @Controller('auth')
@@ -44,5 +41,5 @@ export class AuthController {
     return this.authService.resetPassword(body);
   }
 
- 
+
 }
