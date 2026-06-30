@@ -3,6 +3,7 @@ import { UsersService } from './users.service';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 import { TokenEnum } from 'src/common/enums/tokenEnum';
 import type { IRequest } from 'src/utilis/types/request.type';
+import { RoleEnum } from 'src/common/enums/userEnum';
 
 @Controller('users')
 export class UsersController {
@@ -16,11 +17,12 @@ export class UsersController {
 
   @Get('profile')
   @SetMetadata('tokenType', TokenEnum.accessToken)
+  @SetMetadata('roles', [RoleEnum.admin, RoleEnum.user])
   @UseGuards(AuthGuard)
-  getProfile(@Req() req:IRequest){
-      return this.usersService.getProfile(req);
+  getProfile(@Req() req: IRequest) {
+    return this.usersService.getProfile(req);
   }
-  
+
 }
 
 
