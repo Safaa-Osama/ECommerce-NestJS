@@ -8,7 +8,7 @@ import { IRequest } from 'src/utilis/types/request.type';
 import { RoleEnum } from '../enums/userEnum';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class authorizationGuard implements CanActivate {
 
 
   constructor(
@@ -40,7 +40,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException("Unauthorized");
     }
 
-    const allowedRoles: RoleEnum[]= this.reflector.getAllAndOverride('roles', [context.getHandler()]);
+    const allowedRoles: RoleEnum[]= this.reflector.getAllAndOverride('roles', [context.getHandler(), context.getClass()]);
 
     if (allowedRoles && !allowedRoles.includes(user.role)) {
       throw new UnauthorizedException("Unauthorized");

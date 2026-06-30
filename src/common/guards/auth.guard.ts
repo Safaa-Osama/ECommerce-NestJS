@@ -42,7 +42,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException("Invalid authorization token");
     }
 
-    const tokenType = this.reflector.getAllAndOverride('tokenType', [context.getHandler()]);
+    const tokenType = this.reflector.getAllAndOverride('tokenType', [context.getHandler(), context.getClass()]);
     if (tokenType) {
       console.log({ tokenType });
     }

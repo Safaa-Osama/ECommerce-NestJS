@@ -1,11 +1,10 @@
-import { Controller, Get, Req, SetMetadata, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { AuthGuard } from 'src/common/guards/auth.guard';
-import { TokenEnum } from 'src/common/enums/tokenEnum';
 import type { IRequest } from 'src/utilis/types/request.type';
-import { RoleEnum } from 'src/common/enums/userEnum';
+import { auth } from 'src/common/decorator/auth.decorator';
 
 @Controller('users')
+@auth()
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
 
@@ -16,9 +15,6 @@ export class UsersController {
   }
 
   @Get('profile')
-  @SetMetadata('tokenType', TokenEnum.accessToken)
-  @SetMetadata('roles', [RoleEnum.admin, RoleEnum.user])
-  @UseGuards(AuthGuard)
   getProfile(@Req() req: IRequest) {
     return this.usersService.getProfile(req);
   }
