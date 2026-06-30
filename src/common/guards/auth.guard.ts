@@ -18,10 +18,6 @@ export class AuthGuard implements CanActivate {
   ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const tokenType = this.reflector.get('tokenType', context.getHandler());
-    if (tokenType) {
-      console.log({ tokenType });
-    }
 
     let req!: IRequest | any
     let authorization: string | undefined
@@ -44,6 +40,11 @@ export class AuthGuard implements CanActivate {
     const [prefix, token] = authorization.split(" ");
     if (!token || !prefix) {
       throw new UnauthorizedException("Invalid authorization token");
+    }
+
+    const tokenType = this.reflector.getAllAndOverride('tokenType', [context.getHandler()]);
+    if (tokenType) {
+      console.log({ tokenType });
     }
 
     const { ACCESS_SECRET_KEY, REFRESH_SECRET_KEY } = await this.tokenService.getSignature(prefix);
