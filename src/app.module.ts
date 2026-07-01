@@ -1,4 +1,4 @@
-import { Module} from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
@@ -34,9 +34,7 @@ import { JwtModule } from '@nestjs/jwt';
     AuthModule,
     UsersModule,
     RedisModule,
-    JwtModule.register({
-      global: true,
-    }),
+    JwtModule.register({ global: true }),
   ],
 
   exports: [],
@@ -47,4 +45,4 @@ import { JwtModule } from '@nestjs/jwt';
   ],
   controllers: [AppController],
 })
-export class AppModule {}
+export class AppModule { }

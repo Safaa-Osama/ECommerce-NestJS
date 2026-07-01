@@ -1,7 +1,8 @@
-import { Controller, Get, Req } from '@nestjs/common';
-import { UsersService } from './users.service';
-import type { IRequest } from 'src/utilis/types/request.type';
+import { Controller, Get } from '@nestjs/common';
 import { auth } from 'src/common/decorator/auth.decorator';
+import { User } from 'src/common/decorator/user.decorator';
+import type { UserDocument } from 'src/database/models/user.model';
+import { UsersService } from './users.service';
 
 @Controller('users')
 @auth()
@@ -15,8 +16,8 @@ export class UsersController {
   }
 
   @Get('profile')
-  getProfile(@Req() req: IRequest) {
-    return this.usersService.getProfile(req);
+  getProfile(@User() user: UserDocument) {
+    return this.usersService.getProfile(user);
   }
 
 }

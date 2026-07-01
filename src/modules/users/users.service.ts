@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepo } from 'src/database/reposetories/user-repo';
-import type { IRequest } from 'src/utilis/types/request.type';
+import type { UserDocument } from 'src/database/models/user.model';
 
 @Injectable()
 export class UsersService {
@@ -12,7 +12,7 @@ export class UsersService {
     }
 
 
-    getProfile = async (req: IRequest) => {
-        return { user: req?.user };
+    getProfile = async (user: UserDocument) => {
+        return { user };
     }
 }
