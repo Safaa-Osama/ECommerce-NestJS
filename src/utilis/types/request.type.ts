@@ -1,6 +1,6 @@
 import { HydratedDocument } from 'mongoose';
-import { User } from '../../database/models/user.model';
 import { JwtPayload } from 'jsonwebtoken';
+import { User } from 'src/modules/users/entities/user.entity';
 
 // declare module "express" {
 //     interface Request {

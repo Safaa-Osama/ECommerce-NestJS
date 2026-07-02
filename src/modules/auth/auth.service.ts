@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, Injectable } from '@nestjs/comm
 import { SignUpDto, LoginDto, ConfirmDto, EmailDto, UpdatePassDto, ResetPasswordDto } from './dto/auth.dto';
 import { compare, hash } from '../../common/services/securityService/hash';
 import { encryptValue } from '../../common/services/securityService/encript';
-import { UserRepo } from 'src/database/reposetories/user-repo';
+import { UserRepo } from 'src/common/reposetories/user-repo';
 import { EmailEnum } from 'src/common/enums/emailEnum';
 import { generateOtp, sendMail } from 'src/common/services/mailService/sendMail';
 import { emailTemplete } from 'src/common/services/mailService/mailTemplete';
@@ -171,8 +171,9 @@ export class AuthService {
     await this.redisService.delKey(this.redisService.otpKey({ email, subject: EmailEnum.confirmEmail }))
     await this.redisService.delKey(this.redisService.maxOtp(email))
 
-    return {  message: "Email confirmed"} }
-    
+    return { message: "Email confirmed" }
+  }
+
 
   async resendOtp(body: EmailDto) {
 

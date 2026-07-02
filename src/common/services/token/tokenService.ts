@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
-import { UserRepo } from 'src/database/reposetories/user-repo';
+import { UserRepo } from 'src/common/reposetories/user-repo';
 import RedisService from '../redis/redis.service';
 
 @Injectable()
@@ -44,7 +44,7 @@ export class TokenService {
     }
 
 
-    async authenticateToken_fetchUser (token: string, secret: string) {
+    async authenticateToken_fetchUser(token: string, secret: string) {
 
         const decoded = await this.verifyToken({ token, options: { secret } }) as any;
 

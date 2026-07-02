@@ -10,6 +10,10 @@ import { RedisModule } from './common/services/redis/redisModule';
 import { TokenService } from './common/services/token/tokenService';
 import RedisService from './common/services/redis/redis.service';
 import { JwtModule } from '@nestjs/jwt';
+import { CategoryModule } from './modules/category/category.module';
+import { SubCategoryModule } from './modules/sub-category/sub-category.module';
+import { BrandModule } from './modules/brand/brand.module';
+import { ProductModule } from './modules/product/product.module';
 
 @Module({
   imports: [
@@ -33,8 +37,12 @@ import { JwtModule } from '@nestjs/jwt';
     }),
     AuthModule,
     UsersModule,
+    CategoryModule,
+    SubCategoryModule,
+    BrandModule,
+    ProductModule,
     RedisModule,
-    JwtModule.register({ global: true }),
+    JwtModule.register({ global: true })
   ],
 
   exports: [],

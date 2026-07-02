@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepo } from 'src/database/reposetories/user-repo';
-import type { UserDocument } from 'src/database/models/user.model';
+import { UserRepo } from 'src/common/reposetories/user-repo';
+import type { UserDocument } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {

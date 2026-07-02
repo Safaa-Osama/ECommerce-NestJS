@@ -1,7 +1,7 @@
 
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { TokenService } from '../services/token/tokenService';
-import { UserRepo } from 'src/database/reposetories/user-repo';
+import { UserRepo } from 'src/common/reposetories/user-repo';
 import RedisService from '../services/redis/redis.service';
 import { Reflector } from '@nestjs/core';
 import { IRequest } from 'src/utilis/types/request.type';

@@ -1,7 +1,8 @@
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import slugify from 'slugify';
 
-export type OrderDocument = HydratedDocument<Order>;
+export type BrandDocument = HydratedDocument<Brand>;
 
 @Schema({
   timestamps: true,
@@ -10,11 +11,17 @@ export type OrderDocument = HydratedDocument<Order>;
   toJSON: { virtuals: true },
   toObject: { virtuals: true },
 })
-export class Order {
+export class Brand {
   @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ type: String, unique: true, required: true })
+  @Prop({ type: String, unique: true, required: true,
+    set: function (this: Brand) {
+      const slug = slugify(this.name, { lower: true, trim: true })
+      return slug;
+    }
+
+   })
   slug: string;
 
   @Prop({ type: Boolean, default: true })
@@ -25,9 +32,8 @@ export class Order {
 
 }
 
-export const OrderSchema = SchemaFactory.createForClass(Order);
+export const BrandSchema = SchemaFactory.createForClass(Brand);
 
-const orderModel = MongooseModule.forFeature([
-  { name: Order.name, schema: OrderSchema },
+export const brandModel = MongooseModule.forFeature([
+  { name: Brand.name, schema: BrandSchema },
 ]);
-export default orderModel;
