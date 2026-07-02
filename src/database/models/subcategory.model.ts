@@ -1,5 +1,6 @@
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import slugify from 'slugify';
 
 export type SubCategoryDocument = HydratedDocument<SubCategory>;
 
@@ -14,7 +15,12 @@ export class SubCategory {
   @Prop({ type: String, required: true,unique:true })
   name: string;
 
-  @Prop({ type: String, unique: true, required: true })
+  @Prop({ type: String, unique: true, required: true ,
+    set: function (this: SubCategory) {
+      const slug = slugify  (this.name, { lower: true, trim: true })
+      return slug;
+    }
+  })
   slug: string;
 
   @Prop({ type: Boolean, default: true })
@@ -25,7 +31,6 @@ export class SubCategory {
 
   @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
   category: Types.ObjectId;
-
 }
 
 export const SubCategorySchema = SchemaFactory.createForClass(SubCategory);

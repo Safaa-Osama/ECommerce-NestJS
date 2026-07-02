@@ -1,5 +1,6 @@
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import slugify from 'slugify';
 
 export type ProductDocument = HydratedDocument<Product>;
 
@@ -14,7 +15,22 @@ export class Product {
   @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ type: String, unique: true, required: true })
+  @Prop(String)
+  description: string;
+
+  @Prop({ type: Number, required: true })
+  price: number;
+
+  @Prop({ type: Number, default: 0 })
+  discount: number;
+
+  @Prop({
+    type: String, unique: true, required: true,
+    set: function (this: Product) {
+      const slug = slugify(this.name, { lower: true, trim: true })
+      return slug;
+    }
+  })
   slug: string;
 
   @Prop({ type: Boolean, default: true })
@@ -23,9 +39,11 @@ export class Product {
   @Prop({ type: String, required: true })
   image: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'SubCategory', required: true })
-  subCategory: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
+  categoryId: Types.ObjectId;
 
+@Prop({ type: Types.ObjectId, ref: 'SubCategory', required: true })
+  subCategoryId: Types.ObjectId;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
