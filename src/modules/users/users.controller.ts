@@ -21,7 +21,7 @@ export class UsersController {
     return this.usersService.getAllUsers();
   }
 
-@auth({})
+  @auth({})
   @Get('profile')
   getProfile(@User() user: UserDocument) {
     return this.usersService.getProfile(user);
@@ -29,14 +29,14 @@ export class UsersController {
 
   @auth({})
   @UsePipes(FileValidationPipe)
-  @UseInterceptors(FileInterceptor('profilePic',{
+  @UseInterceptors(FileInterceptor('profilePic', {
     storage: multer_cloud({
       storeType: StoreEnum.memory,
       customType: MulterEnum.image,
       maxFileSize: 5 * 1024 * 1024,
     }),
+  })
   )
-) 
   @Post('upload')
   upload(@User() user: UserDocument, @UploadedFile() file: Express.Multer.File) {
     return this.usersService.upload(user, file);
