@@ -8,7 +8,7 @@ import { generateOtp, sendMail } from 'src/common/services/mailService/sendMail'
 import { emailTemplete } from 'src/common/services/mailService/mailTemplete';
 import { eventEmitter } from 'src/common/services/mailService/email.event';
 import RedisService from 'src/common/services/redis/redis.service';
-import { ProviderEnum } from 'src/common/enums/userEnum';
+import { ProviderEnum, RoleEnum } from 'src/common/enums/userEnum';
 import { randomUUID } from 'crypto';
 import { TokenService } from 'src/common/services/token/tokenService';
 import { Types } from 'mongoose';
@@ -108,6 +108,9 @@ export class AuthService {
       throw new BadRequestException("invalid password")
     }
 
+    const prefix = user.role === RoleEnum.admin ? process.env.PREFIX_ADMIN! : process.env.PREFIX_USER!;
+    const { ACCESS_SECRET_KEY, REFRESH_SECRET_KEY } = await this.tokenService.getSignature(prefix);
+
     const uuid = randomUUID()
     const accessToken = await this.tokenService.generateToken({
       payload: {
@@ -115,7 +118,7 @@ export class AuthService {
         email
       },
       options: {
-        secret: process.env.ACCESS_SECRET_KEY,
+        secret: ACCESS_SECRET_KEY,
         expiresIn: 60 * 60,
         jwtid: uuid
       }
@@ -127,12 +130,11 @@ export class AuthService {
         email
       },
       options: {
-        secret: process.env.REFRESH_SECRET_KEY,
+        secret: REFRESH_SECRET_KEY,
         expiresIn: '1y',
         jwtid: uuid
       }
     })
-
     return {
       accessToken,
       refreshToken

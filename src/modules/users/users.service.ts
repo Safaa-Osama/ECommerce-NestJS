@@ -15,4 +15,11 @@ export class UsersService {
     getProfile = async (user: UserDocument) => {
         return { user };
     }
+
+    upload = async (user: UserDocument, file: Express.Multer.File) => {
+        console.log(user);
+        console.log(file);
+        // const upload = await this.userRepo.create()
+        return file;
+    }
 }
