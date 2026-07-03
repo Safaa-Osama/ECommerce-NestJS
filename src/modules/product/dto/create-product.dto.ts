@@ -1,13 +1,14 @@
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class CreateProductDto {
     @IsNotEmpty()
     @IsString()
     name: string;
-    
-    @IsNotEmpty()
+
+    @IsOptional()
+    @IsArray()
     @IsString()
-    image: string;
+    gallery: string[];
 
     @IsOptional()
     @IsString()
@@ -17,11 +18,21 @@ export class CreateProductDto {
     @IsString()
     description: string;
 
-    @IsOptional()
-    @IsString()
-    category: string;
+    price:number;
+    stock:number;
+    discountPercentage:number;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    brand: string;
+    categoryId: string;
+
+    @IsNotEmpty()
+    @IsString()
+    subCategoryId: string;
+
+    @IsNotEmpty()
+    @IsString()
+    brandId: string;
+
+
 }

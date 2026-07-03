@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { CreateSubCategoryDto } from './dto/subCategory.dto';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { CreateSubCategoryDto, UpdateSubCategoryDto } from './dto/subCategory.dto';
 import { SubCategoryService } from './sub-category.service';
 
 @Controller('sub-category')
@@ -7,13 +7,19 @@ export class SubCategoryController {
   constructor(private readonly subCategoryService: SubCategoryService) { }
 
   @Post()
-  create(@Body() createSubCategoryDto: CreateSubCategoryDto) {
-    return this.subCategoryService.create(createSubCategoryDto);
+  createSubCategory(@Body() body: CreateSubCategoryDto) {
+    return this.subCategoryService.create(body);
   }
 
   @Get()
-  findAll() {
-    return this.subCategoryService.findAll();
+  allSubCategories() {
+    return this.subCategoryService.allSubCategories();
   }
 
+  @Patch(':id')
+  updateSubCategory(@Param('id') id: string, @Body() body: UpdateSubCategoryDto) {
+    return this.subCategoryService.updateSubCategory(id, body);
+  }
+
+  
 }

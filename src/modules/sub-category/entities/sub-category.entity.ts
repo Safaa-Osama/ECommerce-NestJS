@@ -15,7 +15,7 @@ export class SubCategory {
   @Prop({ type: String, required: true,unique:true })
   name: string;
 
-  @Prop({ type: String, unique: true, required: true ,
+  @Prop({ type: String, unique: true,
     set: function (this: SubCategory) {
       const slug = slugify  (this.name, { lower: true, trim: true })
       return slug;

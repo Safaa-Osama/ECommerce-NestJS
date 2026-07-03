@@ -15,19 +15,18 @@ export class Category {
   @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ type: String, unique: true, required: true,
+  @Prop({ type: String, unique: true,
     set: function (this: Category) {
       const slug = slugify(this.name, { lower: true, trim: true })
       return slug;
     }
-
    })
   slug: string;
 
   @Prop({ type: Boolean, default: true })
   isActive: boolean;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String})
   image: string;
 
 }

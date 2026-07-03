@@ -13,3 +13,17 @@ export class CreateSubCategoryDto {
     @IsString()
     category: string;
 }
+
+export class UpdateSubCategoryDto {
+    @IsOptional()
+    @IsString()
+    name?: string;
+    
+    @IsOptional()
+    @IsString()
+    image?: string;
+
+    @IsOptional()
+    @IsString()
+    category?: string;
+}

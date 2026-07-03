@@ -67,7 +67,7 @@ export class Product {
   isActive: boolean;
 
   @Prop({ type: [String] })
-  images: string[];
+  gallery: string[];
 
   @Prop({ type: Types.ObjectId, ref: Category.name, required: true })
   categoryId: Types.ObjectId;
