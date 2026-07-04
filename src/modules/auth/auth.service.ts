@@ -12,6 +12,7 @@ import { ProviderEnum, RoleEnum } from 'src/common/enums/userEnum';
 import { randomUUID } from 'crypto';
 import { TokenService } from 'src/common/services/token/tokenService';
 import { Types } from 'mongoose';
+import { S3service } from 'src/common/services/s3Service/s3.service';
 
 
 @Injectable()
@@ -20,6 +21,7 @@ export class AuthService {
     private readonly userRepo: UserRepo,
     private readonly redisService: RedisService,
     private readonly tokenService: TokenService,
+    private readonly s3service: S3service,
   ) { }
 
 
@@ -60,8 +62,8 @@ export class AuthService {
     await this.redisService.inc(this.redisService.maxOtp(email))
   }
 
-  async signUp(body: SignUpDto) {
-    const { userName, role, gender, email, age, password, cPassword, profilePic, phone } = body;
+  async signUp(body: SignUpDto, profilePic?: Express.Multer.File) {
+    const { userName, role, gender, email, age, password, cPassword, phone } = body;
     const emailExist = await this.userRepo.findOne({ filter: { email } });
 
     if (emailExist) {
@@ -69,9 +71,12 @@ export class AuthService {
     }
 
     // upload profile picture
+    let uploadedImage: string | undefined;
     if (profilePic) {
-      //save image on cloud
-      // const uploadedImage = await UploadedFile(profilePic)
+      uploadedImage = await this.s3service.uploadFile({
+        file: profilePic,
+        path: "users",
+      });
     }
 
     const user = await this.userRepo.create({
@@ -82,7 +87,7 @@ export class AuthService {
       age,
       password: hash({ text: password }),
       phone: encryptValue({ value: phone }),
-      // profilePic: uploadedImage
+      profilePic: uploadedImage,
     });
 
     //send Email
