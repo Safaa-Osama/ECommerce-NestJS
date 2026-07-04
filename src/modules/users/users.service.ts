@@ -8,7 +8,7 @@ export class UsersService {
 
     getAllUsers = async () => {
         const users = await this.userRepo.find();
-        return users;
+        return { message: "done", users };
     }
 
 

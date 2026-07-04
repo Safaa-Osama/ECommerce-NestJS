@@ -1,6 +1,9 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { MulterEnum, StoreEnum } from 'src/common/enums/multerEnum';
+import { multer_cloud } from 'src/common/interceptor/multer';
 import { AuthService } from './auth.service';
-import { SignUpDto, LoginDto, ConfirmDto, EmailDto, ResetPasswordDto } from './dto/auth.dto';
+import { ConfirmDto, EmailDto, LoginDto, ResetPasswordDto, SignUpDto } from './dto/auth.dto';
 
 
 @Controller('auth')
@@ -16,8 +19,14 @@ export class AuthController {
   }
 
   @Post('sign-up')
-  signUp(@Body() body: SignUpDto) {
-    return this.authService.signUp(body);
+    @UseInterceptors(FileInterceptor('profilePic', multer_cloud({
+        storeType: StoreEnum.memory,
+        customType: MulterEnum.image,
+        maxFileSize: 5 * 1024 * 1024,
+      }))
+  )
+  signUp(@Body() body: SignUpDto,@UploadedFile() file: Express.Multer.File) {
+    return this.authService.signUp(body,file);
   }
 
   @Post('sign-in')

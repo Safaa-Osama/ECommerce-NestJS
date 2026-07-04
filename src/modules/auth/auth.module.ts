@@ -6,6 +6,7 @@ import { TokenService } from 'src/common/services/token/tokenService';
 import userModel from '../../modules/users/entities/user.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { S3service } from 'src/common/services/s3Service/s3.service';
 
 
 @Global()
@@ -17,7 +18,8 @@ import { AuthService } from './auth.service';
     UserRepo,
     RedisService,
     TokenService,
-    JwtService
+    JwtService,
+    S3service
   ],
   exports: [],
 })

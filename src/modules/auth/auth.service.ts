@@ -12,7 +12,7 @@ import { ProviderEnum, RoleEnum } from 'src/common/enums/userEnum';
 import { randomUUID } from 'crypto';
 import { TokenService } from 'src/common/services/token/tokenService';
 import { Types } from 'mongoose';
-import { S3service } from 'src/common/services/s3Service/s3.service';
+import { S3service } from '../../common/services/s3Service/s3.service';
 
 
 @Injectable()

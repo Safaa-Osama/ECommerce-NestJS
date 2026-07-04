@@ -3,6 +3,7 @@ import {
 } from 'class-validator';
 import { IsMatch } from 'src/common/pipes/user.pipe';
 import { GenderEnum, RoleEnum } from 'src/common/enums/userEnum';
+import { Type } from 'class-transformer';
 
 export class UpdatePassDto {
   @IsStrongPassword()
@@ -52,6 +53,7 @@ export class SignUpDto extends LoginDto {
   cPassword: string;
 
   @IsNumber()
+  @Type(() => Number)
   @Min(18)
   age: number;
 
