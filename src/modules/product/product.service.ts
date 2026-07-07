@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateProductDto } from './dto/create-product.dto';
-import { ProductRepo } from 'src/common/reposetories/product-repo';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { BrandRepo } from 'src/common/reposetories/brand-repo';
 import { CategoryRepo } from 'src/common/reposetories/category-repo';
+import { ProductRepo } from 'src/common/reposetories/product-repo';
 import { SubCategoryRepo } from 'src/common/reposetories/subCategory-repo';
-import { Types } from 'mongoose';
+import { S3Service } from 'src/common/services/s3Service/s3.service';
+import { CreateProductDto } from './dto/create-product.dto';
 
 @Injectable()
 export class ProductService {
@@ -12,13 +13,14 @@ export class ProductService {
     private readonly productRepo: ProductRepo,
     private readonly categoryRepo: CategoryRepo,
     private readonly subCategoryRepo: SubCategoryRepo,
-    private readonly brandRepo: BrandRepo
+    private readonly brandRepo: BrandRepo,
+    private readonly s3Service: S3Service
   ) { }
 
 
-  async create(body: CreateProductDto) {
+  async createProduct(body: CreateProductDto, files: Express.Multer.File[]) {
     const { name, brandId, categoryId, subCategoryId,
-      description, gallery, price, stock, discountPercentage } = body;
+      description, price, stock, discountPercentage } = body;
 
     const isExist = await this.productRepo.findOne({ filter: { name } });
     if (isExist) {
@@ -39,17 +41,30 @@ export class ProductService {
       throw new BadRequestException('Brand not found');
     }
 
+    let uploadedGallery: string[] = [];
+    if (files && files.length > 0) {
+      uploadedGallery = await this.s3Service.uploadFiles({
+        files,
+        path: 'products',
+      });
+    }
+
     const product = await this.productRepo.create({
       name,
       brandId: new Types.ObjectId(brandId),
       categoryId: new Types.ObjectId(categoryId),
       subCategoryId: new Types.ObjectId(subCategoryId),
       description,
-      gallery,
+      gallery: uploadedGallery,
       price,
       stock,
       discount: discountPercentage
     });
+
+    if (!product) {
+    await this.s3Service.deleteManyFiles(uploadedGallery);
+    throw new InternalServerErrorException('Failed to create product');
+    }
     return product
   }
 

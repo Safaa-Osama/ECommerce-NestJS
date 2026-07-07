@@ -19,14 +19,14 @@ export class AuthController {
   }
 
   @Post('sign-up')
-    @UseInterceptors(FileInterceptor('profilePic', multer_cloud({
-        storeType: StoreEnum.memory,
-        customType: MulterEnum.image,
-        maxFileSize: 5 * 1024 * 1024,
-      }))
+  @UseInterceptors(FileInterceptor('profilePic', multer_cloud({
+    storeType: StoreEnum.memory,
+    customType: MulterEnum.image,
+    maxFileSize: 5 * 1024 * 1024
+  }))
   )
-  signUp(@Body() body: SignUpDto,@UploadedFile() file: Express.Multer.File) {
-    return this.authService.signUp(body,file);
+  signUp(@Body() body: SignUpDto, @UploadedFile() file: Express.Multer.File) {
+    return this.authService.signUp(body, file);
   }
 
   @Post('sign-in')

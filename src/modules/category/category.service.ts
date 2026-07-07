@@ -1,7 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CategoryRepo } from 'src/common/reposetories/category-repo';
-import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 import slugify from 'slugify';
+import { CategoryRepo } from 'src/common/reposetories/category-repo';
+import { S3Service } from 'src/common/services/s3Service/s3.service';
+import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
+import type { UserDocument } from '../users/entities/user.entity';
 
 
 @Injectable()
@@ -9,24 +11,36 @@ export class CategoryService {
 
   constructor(
     private readonly categoryRepo: CategoryRepo,
+    private readonly s3Service: S3Service,
+
   ) { }
 
-  async create(body: CreateCategoryDto) {
+  async createCategory(body: CreateCategoryDto, logo: Express.Multer.File,user:UserDocument) {
     const { name, isActive } = body;
-    const isExist = await this.categoryRepo.findOne({ filter: { name } })
-    if (isExist) {
+
+    if (await this.categoryRepo.findOne({ filter: { name } })) {
       throw new BadRequestException("Category name already exist")
     }
-    const image = ' '
+
+    let uploadedImage: string | undefined;
+    if (logo) {
+      uploadedImage = await this.s3Service.uploadFile({
+        file: logo,
+        path: "users",
+      });
+    }
+
     const category = await this.categoryRepo.create({
       name,
       isActive,
-      slug: slugify(name, { lower: true, trim: true }),
-      image: image
-    });
+      slug: slugify(name),
+      logo: uploadedImage,
+      createdBy:user._id
+    })
+    
     if (!category) {
-      //delete image
-      //throw bad exception
+      await this.s3Service.deleteFile(uploadedImage as string)
+      throw new BadRequestException("Failed to create category")
     }
     return category;
   }

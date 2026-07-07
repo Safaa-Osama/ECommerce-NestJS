@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { SignUpDto, LoginDto, ConfirmDto, EmailDto, UpdatePassDto, ResetPasswordDto } from './dto/auth.dto';
 import { compare, hash } from '../../common/services/securityService/hash';
 import { encryptValue } from '../../common/services/securityService/encript';
@@ -12,7 +12,7 @@ import { ProviderEnum, RoleEnum } from 'src/common/enums/userEnum';
 import { randomUUID } from 'crypto';
 import { TokenService } from 'src/common/services/token/tokenService';
 import { Types } from 'mongoose';
-import { S3service } from '../../common/services/s3Service/s3.service';
+import { S3Service } from '../../common/services/s3Service/s3.service';
 
 
 @Injectable()
@@ -21,7 +21,7 @@ export class AuthService {
     private readonly userRepo: UserRepo,
     private readonly redisService: RedisService,
     private readonly tokenService: TokenService,
-    private readonly s3service: S3service,
+    private readonly s3Service: S3Service,
   ) { }
 
 
@@ -64,16 +64,14 @@ export class AuthService {
 
   async signUp(body: SignUpDto, profilePic?: Express.Multer.File) {
     const { userName, role, gender, email, age, password, cPassword, phone } = body;
-    const emailExist = await this.userRepo.findOne({ filter: { email } });
 
-    if (emailExist) {
+    if (await this.userRepo.findOne({ filter: { email } })) {
       throw new ConflictException('email already exist');
     }
 
-    // upload profile picture
     let uploadedImage: string | undefined;
     if (profilePic) {
-      uploadedImage = await this.s3service.uploadFile({
+      uploadedImage = await this.s3Service.uploadFile({
         file: profilePic,
         path: "users",
       });
@@ -90,9 +88,12 @@ export class AuthService {
       profilePic: uploadedImage,
     });
 
-    //send Email
     await this.sendEmail({ email, subject: EmailEnum.confirmEmail })
 
+    if (!user) {
+      await this.s3Service.deleteFile(uploadedImage!);
+      throw new InternalServerErrorException("Failed to create user")
+    }
     return { user };
   }
 

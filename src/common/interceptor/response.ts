@@ -10,8 +10,8 @@ export class ResponseInterceptor implements NestInterceptor {
             map((data) => {
                 return {
                     success: true,
-                    statusCode: 200,
-                    message: "Success",
+                    statusCode: context.switchToHttp().getResponse().statusCode,
+                    message: "done",
                     data
                 }
             })

@@ -7,7 +7,7 @@ export class CreateCategoryDto {
     
     @IsOptional()
     @IsString()
-    image: string;
+    logo: string;
 
     @IsOptional()
     @IsBoolean()

@@ -16,8 +16,8 @@ export class SubCategory {
   name: string;
 
   @Prop({ type: String, unique: true,
-    set: function (this: SubCategory) {
-      const slug = slugify  (this.name, { lower: true, trim: true })
+    default: function (this: SubCategory) {
+      const slug = slugify(this.name)
       return slug;
     }
   })
@@ -27,10 +27,13 @@ export class SubCategory {
   isActive: boolean;
 
   @Prop(String)
-  image: string;
+  logo: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
   category: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  createdBy: Types.ObjectId;
 }
 
 export const SubCategorySchema = SchemaFactory.createForClass(SubCategory);

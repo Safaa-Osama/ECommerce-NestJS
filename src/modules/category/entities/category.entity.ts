@@ -1,5 +1,5 @@
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 import slugify from 'slugify';
 
 export type CategoryDocument = HydratedDocument<Category>;
@@ -16,8 +16,8 @@ export class Category {
   name: string;
 
   @Prop({ type: String, unique: true,
-    set: function (this: Category) {
-      const slug = slugify(this.name, { lower: true, trim: true })
+    default: function (this: Category) {
+      const slug = slugify(this.name)
       return slug;
     }
    })
@@ -27,7 +27,10 @@ export class Category {
   isActive: boolean;
 
   @Prop({ type: String})
-  image: string;
+  logo: string;
+
+  @Prop({type:Types.ObjectId, ref:"User", required:true})
+  createdBy:Types.ObjectId
 
 }
 

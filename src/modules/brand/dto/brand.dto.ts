@@ -5,12 +5,14 @@ export class CreateBrandDto {
     @IsString()
     name: string;
     
-    @IsOptional()
-    @IsString()
-    image: string;
+    
 
     @IsOptional()
+    @IsString()
+    logo: string;
+
     @IsBoolean()
+    @IsOptional()
     isActive: boolean;
 }
 

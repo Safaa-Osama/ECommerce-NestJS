@@ -1,6 +1,6 @@
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
 import slugify from 'slugify';
+import { Types, HydratedDocument } from 'mongoose';
 
 export type BrandDocument = HydratedDocument<Brand>;
 
@@ -12,23 +12,27 @@ export type BrandDocument = HydratedDocument<Brand>;
   toObject: { virtuals: true },
 })
 export class Brand {
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, min: 3, trim: true })
   name: string;
 
-  @Prop({ type: String, unique: true,
-    set: function (this: Brand) {
+  @Prop({
+    type: String, unique: true,
+    default: function (this: Brand) {
       const slug = slugify(this.name, { lower: true, trim: true })
       return slug;
     }
 
-   })
+  })
   slug: string;
 
   @Prop({ type: Boolean, default: true })
   isActive: boolean;
 
   @Prop({ type: String })
-  image: string;
+  logo: string;
+
+  @Prop({ type: Types.ObjectId, ref: "User", required: true })
+  createdBy: Types.ObjectId
 
 }
 

@@ -9,9 +9,12 @@ import productModel from './entities/product.entity';
 import categoryModel from '../category/entities/category.entity';
 import subCategoryModel from '../sub-category/entities/sub-category.entity';
 import { brandModel } from '../brand/entities/brand.entity';
+import { S3Service } from 'src/common/services/s3Service/s3.service';
+import userModel from '../users/entities/user.entity';
 
 @Module({
   imports: [
+    userModel,
     productModel,
     categoryModel,
     subCategoryModel,
@@ -23,7 +26,8 @@ import { brandModel } from '../brand/entities/brand.entity';
     ProductRepo,
     CategoryRepo,
     BrandRepo,
-    SubCategoryRepo
+    SubCategoryRepo,
+    S3Service
   ],
 })
 export class ProductModule { }

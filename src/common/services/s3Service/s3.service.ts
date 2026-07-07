@@ -7,7 +7,7 @@ import { StoreEnum } from "src/common/enums/multerEnum";
 import { BadRequestException, Injectable } from "@nestjs/common";
 
 @Injectable()
-export class S3service {
+export class S3Service {
 
     private client: S3Client
 
@@ -31,12 +31,12 @@ export class S3service {
         ACL?: ObjectCannedACL,
         path?: string,
         file: Express.Multer.File,
-        store_type?: string
+        store_type?: StoreEnum
     }): Promise<string> {
         const command = new PutObjectCommand({
             Bucket: process.env.AWS_BUCKET_NAME,
             ACL,
-            Key: `AWS_APP_NAME/${path}/${randomUUID()}_${file.originalname}`,
+            Key: `${process.env.AWS_APP_NAME}/${path}/${randomUUID()}_${file.originalname}`,
             Body: store_type == StoreEnum.memory ? file.buffer : fs.createReadStream(file.path),
             ContentType: file.mimetype
         })
@@ -65,7 +65,7 @@ export class S3service {
             params: {
                 Bucket: process.env.AWS_BUCKET_NAME,
                 ACL,
-                Key: `AWS_APP_NAME/${path}/${randomUUID()}_${file.filename}`,
+                Key: `${process.env.AWS_APP_NAME}/${path}/${randomUUID()}_${file.filename}`,
                 Body: store_type == StoreEnum.memory ? file.buffer : fs.createReadStream(file.path),
                 ContentType: file.mimetype
             }
@@ -120,7 +120,7 @@ export class S3service {
     async getManyFiles(folderName: string) {
         const command = new ListObjectsV2Command({
             Bucket: process.env.AWS_BUCKET_NAME,
-            Prefix: `AWS_APP_NAME/users/${folderName}`
+            Prefix: `${process.env.AWS_APP_NAME}/users/${folderName}`
         })
         return await this.client.send(command)
     }
@@ -136,7 +136,7 @@ export class S3service {
         ContentType: string,
         expiresIn?: number
     }) {
-        const Key = `AWS_APP_NAME/${path}/${randomUUID()}_${fileName}`
+        const Key = `${process.env.AWS_APP_NAME}/${path}/${randomUUID()}_${fileName}`
         const command = new PutObjectCommand({
             Bucket: process.env.AWS_BUCKET_NAME,
             Key,
