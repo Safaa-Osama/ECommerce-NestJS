@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { BrandRepo } from 'src/common/reposetories/brand-repo';
 import { CreateBrandDto, UpdateBrandDto } from './dto/brand.dto';
 import type { UserDocument } from '../users/entities/user.entity';
@@ -19,7 +19,7 @@ export class BrandService {
     const { name, isActive } = body;
 
     if (await this.brandRepo.findOne({ filter: { name } })) {
-      throw new BadRequestException("Category name already exist")
+      throw new ConflictException("Brand name already exist")
     }
 
     let uploadedImage: string | undefined;
@@ -49,8 +49,39 @@ export class BrandService {
     return brands;
   }
 
-  async updateBrand(id: string, body: UpdateBrandDto) {
+  async updateBrand(id: string, body: UpdateBrandDto, user: UserDocument, logo?: Express.Multer.File) {
+    const { name, isActive } = body;
+    const brand = await this.brandRepo.findOne({ filter: { _id: id } });
+    if (!brand) {
+      throw new BadRequestException("Brand not found");
+    }
 
+    if (name) {
+      if (await this.brandRepo.findOne({ filter: { name, _id: { $ne: id } } })) {
+        throw new ConflictException("Brand name already exist");
+      }
+      brand.name = name;
+      brand.slug = slugify(name);
+    }
+
+    if (logo) {
+      const uploadedImage = await this.s3Service.uploadFile({
+        file: logo,
+        path: "brand",
+      });
+      if (brand.logo) {
+        await this.s3Service.deleteFile(brand.logo as string);
+      }
+      brand.logo = uploadedImage;
+    }
+
+    if (isActive !== undefined) {
+      brand.isActive = isActive;
+    }
+
+    brand.updatedBy = user._id;
+    await brand.save();
+    return brand;
   }
 
   async deleteBrand(id: string) {

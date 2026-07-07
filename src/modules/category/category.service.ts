@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import slugify from 'slugify';
 import { CategoryRepo } from 'src/common/reposetories/category-repo';
 import { S3Service } from 'src/common/services/s3Service/s3.service';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 import type { UserDocument } from '../users/entities/user.entity';
+import { Types } from 'mongoose';
 
 
 @Injectable()
@@ -50,14 +51,43 @@ export class CategoryService {
     return categories;
   }
 
-  async updateCategory(id: string, body: UpdateCategoryDto) {
-    const category = await this.categoryRepo.findOne({ filter: { _id: id } })
+  
+  
+ 
 
-    if (!category) {
-      throw new BadRequestException("Category not found");
-    }
-
-    return category;
-  }
+ async updateCategory(id: string, body: UpdateCategoryDto, user: UserDocument, logo: Express.Multer.File) {
+     const { name, isActive } = body;
+     const categoty = await this.categoryRepo.findOne({ filter: { _id: id } });
+     if (!categoty) {
+       throw new BadRequestException("categoty not found");
+     }
+ 
+     if (name) {
+       if (await this.categoryRepo.findOne({ filter: { name, _id: { $ne: id } } })) {
+         throw new ConflictException("categoty name already exist");
+       }
+       categoty.name = name;
+       categoty.slug = slugify(name);
+     }
+ 
+     if (logo) {
+       const uploadedImage = await this.s3Service.uploadFile({
+         file: logo,
+         path: "categoty",
+       });
+       if (categoty.logo) {
+         await this.s3Service.deleteFile(categoty.logo as string);
+       }
+       categoty.logo = uploadedImage;
+     }
+ 
+     if (isActive !== undefined) {
+       categoty.isActive = isActive;
+     }
+ 
+     categoty.updatedBy = user._id;
+     await categoty.save();
+     return categoty;
+   }
 
 }

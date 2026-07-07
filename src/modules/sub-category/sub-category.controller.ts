@@ -1,14 +1,28 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import { CreateSubCategoryDto, UpdateSubCategoryDto } from './dto/subCategory.dto';
+import { Body, Controller, Get, Param, ParseFilePipe, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { CreateSubCategoryDto, IdDto, UpdateSubCategoryDto } from './dto/subCategory.dto';
 import { SubCategoryService } from './sub-category.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multer_cloud } from 'src/common/interceptor/multer';
+import { MulterEnum, StoreEnum } from 'src/common/enums/multerEnum';
+import { User } from 'src/common/decorator/user.decorator';
+import type { UserDocument } from '../users/entities/user.entity';
 
 @Controller('sub-category')
 export class SubCategoryController {
   constructor(private readonly subCategoryService: SubCategoryService) { }
 
   @Post()
-  createSubCategory(@Body() body: CreateSubCategoryDto) {
-    return this.subCategoryService.create(body);
+  @UseInterceptors(FileInterceptor('logo', multer_cloud({
+    storeType: StoreEnum.memory,
+    customType: MulterEnum.image,
+    maxFileSize: 5 * 1024 * 1024
+  }))
+  )
+  createSubCategory(@Body() body: CreateSubCategoryDto,
+    @UploadedFile(ParseFilePipe) file: Express.Multer.File,
+    @User() user: UserDocument
+  ) {
+    return this.subCategoryService.createSubCategory(body, file, user);
   }
 
   @Get()
@@ -17,9 +31,19 @@ export class SubCategoryController {
   }
 
   @Patch(':id')
-  updateSubCategory(@Param('id') id: string, @Body() body: UpdateSubCategoryDto) {
-    return this.subCategoryService.updateSubCategory(id, body);
+  @UseInterceptors(FileInterceptor('logo', multer_cloud({
+    storeType: StoreEnum.memory,
+    customType: MulterEnum.image,
+    maxFileSize: 5 * 1024 * 1024
+  }))
+  )
+  updateSubCategory(@Param() params: IdDto,
+   @Body() body: UpdateSubCategoryDto,
+   @UploadedFile(ParseFilePipe) file: Express.Multer.File,
+   @User() user: UserDocument
+  ) {
+    return this.subCategoryService.updateSubCategory(params.id, body,file,user);
   }
 
-  
+
 }

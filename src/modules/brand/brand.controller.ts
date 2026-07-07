@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseFilePipe, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { BrandService } from './brand.service';
-import { CreateBrandDto, UpdateBrandDto } from './dto/brand.dto';
+import { CreateBrandDto, IdDto, UpdateBrandDto } from './dto/brand.dto';
 import { auth } from 'src/common/decorator/auth.decorator';
 import { RoleEnum } from 'src/common/enums/userEnum';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -34,12 +34,23 @@ export class BrandController {
   }
 
   @Patch(':id')
-  updateBrand(@Param('id') id: string, @Body() body: UpdateBrandDto) {
-    return this.brandService.updateBrand(id, body);
-  }
+  @auth({ roles: [RoleEnum.admin] })
+  @UseInterceptors(FileInterceptor('logo', multer_cloud({
+    storeType: StoreEnum.memory,
+    customType: MulterEnum.image,
+    maxFileSize: 5 * 1024 * 1024
+  }))
+  )
+  updateBrand(@Param() params: IdDto,
+    @UploadedFile(new ParseFilePipe({ fileIsRequired: false })) file: Express.Multer.File,
+    @Body() body: UpdateBrandDto,
+    @User() user: UserDocument) {
+    return this.brandService.updateBrand(params.id, body, user, file);
+   }
 
   @Delete(':id')
-  deleteBrand(@Param('id') id: string) {
-    return this.brandService.deleteBrand(id);
+  @auth({ roles: [RoleEnum.admin] })
+  deleteBrand(@Param() params: IdDto) {
+    return this.brandService.deleteBrand(params.id);
   }
 }

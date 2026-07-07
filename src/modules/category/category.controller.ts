@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, ParseFilePipe, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { CategoryService } from './category.service';
-import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
+import { CreateCategoryDto, IdDto, UpdateCategoryDto } from './dto/category.dto';
 import { auth } from 'src/common/decorator/auth.decorator';
 import { RoleEnum } from 'src/common/enums/userEnum';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -17,14 +17,12 @@ export class CategoryController {
 
   @Post()
   @auth({ roles: [RoleEnum.admin] })
-
   @UseInterceptors(FileInterceptor('logo', multer_cloud({
     storeType: StoreEnum.memory,
     customType: MulterEnum.image,
     maxFileSize: 5 * 1024 * 1024
   }))
   )
-
   createCategory(
     @UploadedFile(ParseFilePipe) file: Express.Multer.File,
     @Body() body: CreateCategoryDto,
@@ -40,7 +38,17 @@ export class CategoryController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() body: UpdateCategoryDto) {
-    return this.categoryService.updateCategory(id, body);
-  }
+    @UseInterceptors(FileInterceptor('logo', multer_cloud({
+      storeType: StoreEnum.memory,
+      customType: MulterEnum.image,
+      maxFileSize: 5 * 1024 * 1024
+    }))
+    )
+    updateCategory(@Param() params: IdDto,
+     @Body() body: UpdateCategoryDto,
+     @User() user: UserDocument,
+     @UploadedFile(new ParseFilePipe({fileIsRequired:false})) file: Express.Multer.File,
+    ) {
+      return this.categoryService.updateCategory(params.id, body,user,file);
+    }
 }
