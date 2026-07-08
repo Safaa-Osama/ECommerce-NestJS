@@ -29,6 +29,9 @@ export class Category {
   @Prop({ type: String})
   logo: string;
 
+  @Prop({type:[{type:Types.ObjectId, ref:"Brand"}], default:[]})
+  brands:Types.ObjectId[];
+
   @Prop({type:Types.ObjectId, ref:"User", required:true})
   createdBy:Types.ObjectId
 

@@ -9,17 +9,20 @@ import { CategoryController } from './category.controller';
 import { CategoryService } from './category.service';
 import categoryModel from './entities/category.entity';
 import RedisService from 'src/common/services/redis/redis.service';
+import { BrandRepo } from 'src/common/reposetories/brand-repo';
+import {brandModel} from '../brand/entities/brand.entity';
 
 @Global()
 @Module({
-  imports: [categoryModel,userModel],
+  imports: [categoryModel,userModel,brandModel],
   controllers: [CategoryController],
   providers: [CategoryService, CategoryRepo,
     UserRepo,
     TokenService,
     S3Service,
     JwtService,
-    RedisService
+    RedisService,
+    BrandRepo
   ],
 })
 export class CategoryModule { }

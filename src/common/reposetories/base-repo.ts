@@ -104,12 +104,14 @@ abstract class BaseRepo<TDocument> {
   async paginate({
     page,
     limit,
+    skip,
     sort,
     populate,
     search,
   }: {
     page?: number;
     limit?: number;
+    skip?: number;
     sort?: QueryOptions<TDocument>['sort'];
     populate?: PopulateOptions | PopulateOptions[];
     search?: QueryFilter<TDocument>;
@@ -123,8 +125,9 @@ abstract class BaseRepo<TDocument> {
     if (limit < 1) {
       limit = 2;
     }
-
-    const skip = (page - 1) * limit;
+    if (!skip) {
+      skip = (page - 1) * limit;
+    }
 
     let query = this.Model.find({ ...(search ?? {}) })
       .limit(limit)

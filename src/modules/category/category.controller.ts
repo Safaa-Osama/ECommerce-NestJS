@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Param, ParseFilePipe, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseFilePipe, Patch, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { CategoryService } from './category.service';
-import { CreateCategoryDto, IdDto, UpdateCategoryDto } from './dto/category.dto';
+import { CreateCategoryDto, IdDto, QueryCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 import { auth } from 'src/common/decorator/auth.decorator';
 import { RoleEnum } from 'src/common/enums/userEnum';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -33,11 +33,12 @@ export class CategoryController {
 
 
   @Get()
-  allCategories() {
-    return this.categoryService.allCategories();
+  allCategories(@Query() query:QueryCategoryDto) {
+    return this.categoryService.allCategories(query);
   }
 
   @Patch(':id')
+  @auth({ roles: [RoleEnum.admin] })
     @UseInterceptors(FileInterceptor('logo', multer_cloud({
       storeType: StoreEnum.memory,
       customType: MulterEnum.image,

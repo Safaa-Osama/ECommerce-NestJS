@@ -1,6 +1,6 @@
-import { Body, Controller, Delete, Get, Param, ParseFilePipe, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseFilePipe, Patch, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { BrandService } from './brand.service';
-import { CreateBrandDto, IdDto, UpdateBrandDto } from './dto/brand.dto';
+import { CreateBrandDto, IdDto, QueryBrandDto, UpdateBrandDto } from './dto/brand.dto';
 import { auth } from 'src/common/decorator/auth.decorator';
 import { RoleEnum } from 'src/common/enums/userEnum';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -29,8 +29,8 @@ export class BrandController {
   }
 
   @Get()
-  allBrands() {
-    return this.brandService.allBrands();
+  allBrands(@Query() query:QueryBrandDto) {
+    return this.brandService.allBrands(query);
   }
 
   @Patch(':id')
