@@ -11,6 +11,10 @@ import subCategoryModel from '../sub-category/entities/sub-category.entity';
 import { brandModel } from '../brand/entities/brand.entity';
 import { S3Service } from 'src/common/services/s3Service/s3.service';
 import userModel from '../users/entities/user.entity';
+import { TokenService } from 'src/common/services/token/tokenService';
+import { JwtService } from '@nestjs/jwt';
+import { UserRepo } from 'src/common/reposetories/user-repo';
+import RedisService from 'src/common/services/redis/redis.service';
 
 @Module({
   imports: [
@@ -27,7 +31,11 @@ import userModel from '../users/entities/user.entity';
     CategoryRepo,
     BrandRepo,
     SubCategoryRepo,
-    S3Service
+    S3Service,
+    UserRepo,
+    TokenService,
+    JwtService,
+    RedisService
   ],
 })
 export class ProductModule { }

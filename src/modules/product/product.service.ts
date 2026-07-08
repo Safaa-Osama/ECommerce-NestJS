@@ -5,7 +5,8 @@ import { CategoryRepo } from 'src/common/reposetories/category-repo';
 import { ProductRepo } from 'src/common/reposetories/product-repo';
 import { SubCategoryRepo } from 'src/common/reposetories/subCategory-repo';
 import { S3Service } from 'src/common/services/s3Service/s3.service';
-import { CreateProductDto } from './dto/create-product.dto';
+import { CreateProductDto } from './dto/product.dto';
+import type { UserDocument } from '../users/entities/user.entity';
 
 @Injectable()
 export class ProductService {
@@ -18,17 +19,16 @@ export class ProductService {
   ) { }
 
 
-  async createProduct(body: CreateProductDto, files: Express.Multer.File[]) {
-    const { name, brandId, categoryId, subCategoryId,
-      description, price, stock, discountPercentage } = body;
+  async createProduct(body: CreateProductDto, files: Express.Multer.File[], mainImage: Express.Multer.File, user:UserDocument) {
+    const { name, brandId, categoryId, subCategoryId, isActive,ratingAvg,
+      description, price, stock, priceAfterDiscount } = body;
 
     const isExist = await this.productRepo.findOne({ filter: { name } });
     if (isExist) {
       throw new BadRequestException('Product name already exists');
-    }
-    // stock ++ || no adding if stock is zero
-    // stock == 0 ? stock = 1 : stock = stock;
 
+      //stock = stock == 0 ? 1 : stock;///
+    }
     if (!(await this.categoryRepo.findById(categoryId))) {
       throw new BadRequestException('Category not found');
     }
@@ -45,25 +45,38 @@ export class ProductService {
     if (files && files.length > 0) {
       uploadedGallery = await this.s3Service.uploadFiles({
         files,
-        path: 'products',
+        path: 'products/gallery',
       });
     }
 
+    let uploadedmainImage: string | undefined;
+    if (mainImage) {
+      uploadedmainImage = await this.s3Service.uploadFile({
+        file:mainImage,
+        path: 'products/mainImage',
+      });
+    }
+
+
+
     const product = await this.productRepo.create({
       name,
-      brandId: new Types.ObjectId(brandId),
-      categoryId: new Types.ObjectId(categoryId),
-      subCategoryId: new Types.ObjectId(subCategoryId),
+      brandId: Types.ObjectId.createFromHexString(brandId),
+      categoryId: Types.ObjectId.createFromHexString(categoryId),
+      subCategoryId: Types.ObjectId.createFromHexString(subCategoryId),
+      mainImage:uploadedmainImage,
       description,
       gallery: uploadedGallery,
       price,
+      ratingAvg,
       stock,
-      discount: discountPercentage
+      priceAfterDiscount
     });
 
     if (!product) {
-    await this.s3Service.deleteManyFiles(uploadedGallery);
-    throw new InternalServerErrorException('Failed to create product');
+      await this.s3Service.deleteManyFiles(uploadedGallery);
+      await this.s3Service.deleteFile(uploadedmainImage as string);
+      throw new InternalServerErrorException('Failed to create product');
     }
     return product
   }

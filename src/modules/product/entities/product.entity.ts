@@ -3,7 +3,9 @@ import { HydratedDocument, Types } from 'mongoose';
 import slugify from 'slugify';
 import { Brand } from 'src/modules/brand/entities/brand.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
-import { SubCategory } from 'src/modules/sub-category/entities/sub-category.entity';  
+import { SubCategory } from 'src/modules/sub-category/entities/sub-category.entity';
+import { User } from 'src/modules/users/entities/user.entity';
+  
 
 export type ProductDocument = HydratedDocument<Product>;
 
@@ -24,7 +26,7 @@ export class Product {
 
   @Prop({
     type: String, required: true,
-    set: function (this: Product) {
+    default: function (this: Product) {
       const slug = slugify(this.name, { lower: true, trim: true })
       return slug;
     }
@@ -39,13 +41,7 @@ export class Product {
 
   @Prop({
     type: Number,
-    get: function (this: Product) {
-      if (this.discount > 0) {
-        return this.price - this.discount;
-      }
-      return this.price;
-    },
-    set: function (this: Product) {
+    default: function (this: Product) {
       if (this.discount > 0) {
         return this.price - this.discount;
       }
@@ -66,17 +62,26 @@ export class Product {
   @Prop({ type: Boolean, default: true })
   isActive: boolean;
 
+  @Prop({ type: String })
+  mainImage: string;
+  
   @Prop({ type: [String] })
   gallery: string[];
 
   @Prop({ type: Types.ObjectId, ref: Category.name, required: true })
   categoryId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: SubCategory.name , required: true })
+  @Prop({ type: Types.ObjectId, ref: SubCategory.name, required: true })
   subCategoryId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: Brand.name, required: true })
   brandId: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  createdBy: Types.ObjectId;
+
+   @Prop({ type: Types.ObjectId, ref:User.name })
+  updatedBy: Types.ObjectId;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
