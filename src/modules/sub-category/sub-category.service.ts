@@ -10,16 +10,16 @@ import { Types } from 'mongoose';
 
 @Injectable()
 export class SubCategoryService {
-constructor(
+  constructor(
     private readonly categoryRepo: CategoryRepo,
     private readonly subCategoryRepo: SubCategoryRepo,
     private readonly s3Service: S3Service,
 
-  ) {}
+  ) { }
 
 
   async createSubCategory(body: CreateSubCategoryDto, logo: Express.Multer.File, user: UserDocument) {
-const { name, isActive } = body;
+    const { name, isActive } = body;
 
 
     if (await this.subCategoryRepo.findOne({ filter: { name } })) {
@@ -39,16 +39,15 @@ const { name, isActive } = body;
         path: "category/sub-category",
       });
     }
-
     const subCategory = await this.subCategoryRepo.create({
       name,
       isActive,
       slug: slugify(name),
       logo: uploadedImage,
       category: category._id,
-      createdBy:user._id
+      createdBy: user._id
     })
-    
+
     if (!subCategory) {
       await this.s3Service.deleteFile(uploadedImage as string)
       throw new BadRequestException("Failed to create sub-category")
@@ -60,7 +59,7 @@ const { name, isActive } = body;
     return this.subCategoryRepo.find({})
   }
 
-  updateSubCategory(id: string, body: UpdateSubCategoryDto,logo: Express.Multer.File,user:UserDocument) {
-   const {} = body
+  updateSubCategory(id: string, body: UpdateSubCategoryDto, logo: Express.Multer.File, user: UserDocument) {
+    const { } = body
   }
 }

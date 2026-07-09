@@ -25,7 +25,7 @@ export class BrandService {
     if (logo) {
       uploadedImage = await this.s3Service.uploadFile({
         file: logo,
-        path: "users",
+        path: "brand",
       });
     }
 

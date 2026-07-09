@@ -1,3 +1,4 @@
+import { Type } from "class-transformer";
 import { IsArray, IsBoolean, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class CreateProductDto {
@@ -6,6 +7,7 @@ export class CreateProductDto {
     name: string;
 
     @IsString()
+    @IsOptional()
     mainImage: string;
 
     @IsOptional()
@@ -14,8 +16,8 @@ export class CreateProductDto {
     gallery: string[];
 
 
-    @IsString()
-    slug: string;
+    // @IsString()
+    // slug: string;
 
     @IsOptional()
     @IsString()
@@ -23,26 +25,32 @@ export class CreateProductDto {
 
     @IsNotEmpty()
     @IsNumber()
+    @Type(() => Number)
     price: number;
 
     @IsNotEmpty()
     @IsNumber()
+    @Type(() => Number)
     stock: number;
 
     @IsOptional()
     @IsNumber()
+    @Type(() => Number)
     discount: number;
 
     @IsOptional()
     @IsNumber()
+    @Type(() => Number)
     priceAfterDiscount: number;
 
     @IsOptional()
     @IsNumber()
+    @Type(() => Number)
     ratingAvg: number;
 
     @IsOptional()
     @IsNumber()
+    @Type(() => Number)
     ratingCount: number;
 
     @IsOptional()
@@ -53,7 +61,7 @@ export class CreateProductDto {
     @IsMongoId()
     categoryId: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsMongoId()
     subCategoryId: string;
 

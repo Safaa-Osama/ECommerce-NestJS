@@ -68,13 +68,13 @@ export class Product {
   @Prop({ type: [String] })
   gallery: string[];
 
-  @Prop({ type: Types.ObjectId, ref: Category.name, required: true })
+  @Prop({ type: Types.ObjectId, ref: Category.name })
   categoryId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: SubCategory.name, required: true })
+  @Prop({ type: Types.ObjectId, ref: SubCategory.name })
   subCategoryId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: Brand.name, required: true })
+  @Prop({ type: Types.ObjectId, ref: Brand.name })
   brandId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })

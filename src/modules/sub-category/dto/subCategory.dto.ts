@@ -7,7 +7,7 @@ export class CreateSubCategoryDto {
     @IsString()
     name: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
     logo: string;
 

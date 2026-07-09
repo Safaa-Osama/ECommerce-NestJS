@@ -6,12 +6,14 @@ import { multer_cloud } from 'src/common/interceptor/multer';
 import { MulterEnum, StoreEnum } from 'src/common/enums/multerEnum';
 import { User } from 'src/common/decorator/user.decorator';
 import type { UserDocument } from '../users/entities/user.entity';
+import { auth } from 'src/common/decorator/auth.decorator';
 
 @Controller('sub-category')
 export class SubCategoryController {
   constructor(private readonly subCategoryService: SubCategoryService) { }
 
   @Post()
+  @auth({})
   @UseInterceptors(FileInterceptor('logo', multer_cloud({
     storeType: StoreEnum.memory,
     customType: MulterEnum.image,

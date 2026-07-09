@@ -7,6 +7,7 @@ import { multer_cloud } from 'src/common/interceptor/multer';
 import { MulterEnum, StoreEnum } from 'src/common/enums/multerEnum';
 import { FileValidationPipe } from 'src/common/pipes/multer.pipe';
 import type { UserDocument } from './entities/user.entity';
+import { RoleEnum } from 'src/common/enums/userEnum';
 
 
 
@@ -21,7 +22,7 @@ export class UsersController {
     return this.usersService.getAllUsers();
   }
 
-  @auth({})
+  @auth({})   
   @Get('profile')
   getProfile(@User() user: UserDocument) {
     return this.usersService.getProfile(user);

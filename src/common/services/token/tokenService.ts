@@ -27,9 +27,10 @@ export class TokenService {
     }
 
     async getSignature(prefix: string) {
+        
         let ACCESS_SECRET_KEY: string = "";
         let REFRESH_SECRET_KEY: string = "";
-
+        
         if (prefix === process.env.PREFIX_USER) {
             ACCESS_SECRET_KEY = process.env.SECRET_KEY_USER!;
             REFRESH_SECRET_KEY = process.env.REFRESH_SECRET_KEY_USER!;
