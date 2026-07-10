@@ -14,6 +14,7 @@ import { CategoryModule } from './modules/category/category.module';
 import { SubCategoryModule } from './modules/sub-category/sub-category.module';
 import { BrandModule } from './modules/brand/brand.module';
 import { ProductModule } from './modules/product/product.module';
+import { CartModule } from './modules/cart/cart.module';
 
 @Module({
   imports: [
@@ -41,8 +42,9 @@ import { ProductModule } from './modules/product/product.module';
     SubCategoryModule,
     BrandModule,
     ProductModule,
+    CartModule,
     RedisModule,
-    JwtModule.register({ global: true })
+    JwtModule.register({ global: true }),
   ],
 
   exports: [],
