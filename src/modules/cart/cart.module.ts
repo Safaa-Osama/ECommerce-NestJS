@@ -15,12 +15,15 @@ import userModel from '../users/entities/user.entity';
 import { CartController } from './cart.controller';
 import { CartService } from './cart.service';
 import { brandModel } from '../brand/entities/brand.entity';
+import CartRepo from 'src/common/reposetories/cart-repo';
+import { cartModel } from './entities/cart.entity';
 
 @Module({
-  imports: [userModel,productModel,categoryModel,subCategoryModel,brandModel],
+  imports: [userModel, productModel, categoryModel, subCategoryModel, brandModel, cartModel],
   controllers: [CartController],
   providers: [
     CartService,
+    CartRepo,
     TokenService,
     JwtService,
     UserRepo,

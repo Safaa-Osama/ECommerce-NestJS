@@ -7,13 +7,13 @@ export type CartDocument = HydratedDocument<Cart>;
 
 
 class CartItems {
-  @Prop({ type: Types.ObjectId, ref: Product.name})
-  product: Types.ObjectId
+  @Prop({ type: Types.ObjectId, ref: Product.name })
+  productId: Types.ObjectId
 
   @Prop({ type: Number, default: 1 })
   quantity: number
 
-  @Prop({ type: Number,required:true })
+  @Prop({ type: Number, required: true })
   subTotal: number
 
 }
@@ -27,7 +27,7 @@ class CartItems {
 })
 export class Cart {
   @Prop({ type: [CartItems], required: true })
-  products:CartItems[]
+  products: CartItems[]
 
   @Prop({ type: Types.ObjectId, ref: "User", required: true })
   createdBy: Types.ObjectId
@@ -42,15 +42,15 @@ export class Cart {
   deletedAt: Date
 
   @Prop({ type: Number, default: 0 })
-  total: number
+  totalPrice: number
 }
 
 
 export const CartSchema = SchemaFactory.createForClass(Cart);
 
-CartSchema.pre("save",function(){
-this.total = this.products.reduce((total,product)=>total + product.subTotal,0)
-  })
+CartSchema.pre("save", function () {
+  this.totalPrice = this.products.reduce((total, product) => total + product.subTotal, 0)
+})
 
 export const cartModel = MongooseModule.forFeature([
   { name: Cart.name, schema: CartSchema },
