@@ -1,7 +1,7 @@
 import { PartialType } from "@nestjs/mapped-types";
 import { Type } from "class-transformer";
 import { IsBoolean, IsLowercase, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
-import { AtLeastOne } from "src/common/decorator/brand.decorator";
+import { AtLeastOne } from "src/common/decorator/AtLeastOne.decorator";
 
 export class CreateBrandDto {
     @IsNotEmpty()

@@ -1,6 +1,6 @@
 import { PartialType } from "@nestjs/mapped-types";
 import { IsBoolean, IsMongoId, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { AtLeastOne } from "src/common/decorator/brand.decorator";
+import { AtLeastOne } from "src/common/decorator/AtLeastOne.decorator";
 
 export class CreateSubCategoryDto {
     @IsNotEmpty()

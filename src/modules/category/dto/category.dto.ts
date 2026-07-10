@@ -1,13 +1,13 @@
 import { PartialType } from "@nestjs/mapped-types";
 import { Type } from "class-transformer";
 import { IsArray, IsBoolean, IsLowercase, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
-import { AtLeastOne } from "src/common/decorator/brand.decorator";
+import { AtLeastOne } from "src/common/decorator/AtLeastOne.decorator";
 
 export class CreateCategoryDto {
     @IsNotEmpty()
     @IsString()
     name: string;
-    
+
     @IsOptional()
     @IsString()
     logo: string;
@@ -26,7 +26,7 @@ export class CreateCategoryDto {
 export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {
 }
 
-export class IdDto{
+export class IdDto {
     @IsMongoId()
     @IsNotEmpty()
     id: string;

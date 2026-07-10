@@ -40,13 +40,7 @@ export class Product {
   discount: number;
 
   @Prop({
-    type: Number,
-    default: function (this: Product) {
-      if (this.discount > 0) {
-        return this.price - this.discount;
-      }
-      return this.price;
-    }
+    type: Number
   })
   priceAfterDiscount: number;
 

@@ -1,5 +1,8 @@
+import { PartialType } from "@nestjs/mapped-types";
 import { Type } from "class-transformer";
 import { IsArray, IsBoolean, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { Types } from "mongoose";
+import { AtLeastOne } from "src/common/decorator/AtLeastOne.decorator";
 
 export class CreateProductDto {
     @IsNotEmpty()
@@ -14,10 +17,6 @@ export class CreateProductDto {
     @IsArray()
     @IsString()
     gallery: string[];
-
-
-    // @IsString()
-    // slug: string;
 
     @IsOptional()
     @IsString()
@@ -68,4 +67,32 @@ export class CreateProductDto {
     @IsNotEmpty()
     @IsMongoId()
     brandId: string;
+}
+
+export class ProductQueryDto{
+
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
+    page: number;
+
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
+    limit: number;
+
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
+    skip: number;
+}
+
+export class IdDto{
+    @IsMongoId()
+    @IsNotEmpty()
+    id: Types.ObjectId;
+}
+
+@AtLeastOne(['mainImage', 'gallery', 'name', 'description', 'price', 'stock', 'discount', 'isActive', 'categoryId', 'subCategoryId', 'brandId'])
+export class UpdateProductDto extends PartialType(CreateProductDto) {
 }
