@@ -35,7 +35,7 @@ export class ProductController {
   }
 
 
-  @Patch()
+  @Patch(':id')
   @auth({ roles: [RoleEnum.admin] })
   @UseInterceptors(FileFieldsInterceptor([
     { name: "gallery", maxCount: 5 },
