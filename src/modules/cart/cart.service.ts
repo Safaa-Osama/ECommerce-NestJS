@@ -4,12 +4,15 @@ import type { UserDocument } from '../users/entities/user.entity';
 import { CreateCartDto, UpdateCartDto } from './dto/cart.dto';
 import CartRepo from 'src/common/reposetories/cart-repo';
 import { Types } from 'mongoose';
+import { UserRepo } from 'src/common/reposetories/user-repo';
 
 @Injectable()
 export class CartService {
   constructor(
     private readonly productRepo: ProductRepo,
-    private readonly cartRepo: CartRepo
+    private readonly cartRepo: CartRepo,
+    private readonly userRepo: UserRepo
+
   ) { }
 
 
