@@ -16,6 +16,8 @@ import { BrandModule } from './modules/brand/brand.module';
 import { ProductModule } from './modules/product/product.module';
 import { CartModule } from './modules/cart/cart.module';
 import { WishListModule } from './modules/wishList/wishList.module';
+import { CouponModule } from './coupon/coupon.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -43,10 +45,13 @@ import { WishListModule } from './modules/wishList/wishList.module';
     SubCategoryModule,
     BrandModule,
     ProductModule,
+    CouponModule,
     CartModule,
     WishListModule,
     RedisModule,
     JwtModule.register({ global: true }),
+    OrderModule,
+    
   ],
 
   exports: [],

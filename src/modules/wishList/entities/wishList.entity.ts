@@ -13,9 +13,6 @@ class WishListItems {
   @Prop({ type: Number, default: 1 })
   quantity: number
 
-  @Prop({ type: Number, required: true })
-  subTotal: number
-
 }
 
 @Schema({

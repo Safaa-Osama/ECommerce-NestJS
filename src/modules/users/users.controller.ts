@@ -1,13 +1,12 @@
 import { Controller, Get, Post, UploadedFile, UseInterceptors, UsePipes } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { auth } from 'src/common/decorator/auth.decorator';
 import { User } from 'src/common/decorator/user.decorator';
-import { UsersService } from './users.service';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { multer_cloud } from 'src/common/interceptor/multer';
 import { MulterEnum, StoreEnum } from 'src/common/enums/multerEnum';
+import { multer_cloud } from 'src/common/interceptor/multer';
 import { FileValidationPipe } from 'src/common/pipes/multer.pipe';
 import type { UserDocument } from './entities/user.entity';
-import { RoleEnum } from 'src/common/enums/userEnum';
+import { UsersService } from './users.service';
 
 
 
