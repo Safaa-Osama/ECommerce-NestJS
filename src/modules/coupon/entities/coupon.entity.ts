@@ -10,6 +10,8 @@ export type CouponDocument = HydratedDocument<Coupon>;
     strict: true,
 })
 export class Coupon {
+    @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+    createdBy: Types.ObjectId;
 
     @Prop({ unique: true, required: true, trim: true })
     code: string;
