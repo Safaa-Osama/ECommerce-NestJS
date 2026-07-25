@@ -1,15 +1,34 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsDate, IsEnum, IsMongoId, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { Types } from "mongoose";
+import { OrderStatus, PaymentMethod, PaymentStatus } from "src/common/enums/orderEnum";
 
 export class CreateOrderDto {
-    @IsString()
-    @IsNotEmpty()
-    orderId: string;
+    @IsMongoId()
+    @IsOptional()
+    couponId: Types.ObjectId;
+
 
     @IsString()
     @IsNotEmpty()
-    invoiceUrl: string;
+    address: string;
+
+    @IsEnum(PaymentMethod)
+    @IsNotEmpty()
+    paymentMethod: PaymentMethod;
 
     @IsString()
     @IsNotEmpty()
-    invoiceNumber: string;
+    phone: string;
+
+    @IsEnum(OrderStatus)
+    @IsOptional()
+    status: OrderStatus;
+
+    @IsEnum(PaymentStatus)
+    @IsOptional()
+    paymentStatus: PaymentStatus;
+
+    @IsDate()
+    @IsOptional()
+    deliveredAt: Date;
 }

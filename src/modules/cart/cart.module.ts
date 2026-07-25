@@ -15,7 +15,7 @@ import userModel from '../users/entities/user.entity';
 import { CartController } from './cart.controller';
 import { CartService } from './cart.service';
 import { brandModel } from '../brand/entities/brand.entity';
-import CartRepo from 'src/common/reposetories/cart-repo';
+import { CartRepo } from 'src/common/reposetories/cart-repo';
 import { cartModel } from './entities/cart.entity';
 
 @Module({
@@ -30,7 +30,7 @@ import { cartModel } from './entities/cart.entity';
     RedisService,
     ProductRepo,
     S3Service,
-    CategoryRepo,SubCategoryRepo,BrandRepo
+    CategoryRepo, SubCategoryRepo, BrandRepo
   ],
 })
 export class CartModule { }

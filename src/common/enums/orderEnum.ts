@@ -5,7 +5,7 @@ export enum OrderStatus {
   cancelled = 'cancelled',
 }
 
-export enum OrderPaymentMethod {
+export enum PaymentMethod {
   cash = 'cash',
   card = 'card',
 }
