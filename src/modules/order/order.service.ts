@@ -45,10 +45,13 @@ export class OrderService {
     }
 
     for (const cartItem of cart.products) {
-      const product = await this.productRepo.findOne({
+      const product = await this.productRepo.findOneAndUpdate({
         filter: {
           _id: cartItem.productId,
           stock: { $gte: cartItem.quantity }
+        },
+        update: {
+          $inc: { stock: -cartItem.quantity }
         }
       });
       if (!product) {
@@ -67,20 +70,19 @@ export class OrderService {
       phone,
       address,
       status: OrderStatus.pending,
-      paymentStatus: PaymentStatus.pending,
+      paymentStatus: paymentMethod == PaymentMethod.cash ? PaymentStatus.paid : PaymentStatus.pending,
       totalPrice: cart.totalPrice,
       totalAfterDiscount,
 
     });
 
-  
+
     if (coupon) {
       await this.couponRepo.findOneAndUpdate({
         filter: { _id: coupon._id },
         update: {
-          usedBy: [...coupon.usedBy, user._id],
-          maxUsage: coupon.maxUsage - 1,
-          $inc: { totalUsage: 1 }
+          $push: { usedBy: user._id },
+          $inc: { maxUsage: -1, totalUsage: 1 }
         }
       });
     }
@@ -92,6 +94,31 @@ export class OrderService {
 
     return order;
 
+  }
+
+
+
+  async cancelOrder(user: UserDocument, orderId: Types.ObjectId) {
+    const order = await this.orderRepo.findOne({
+      filter: {
+        _id: orderId,
+        userId: user._id,
+        status: OrderStatus.pending,
+      }
+    });
+    if (!order) {
+      throw new BadGatewayException("order is not found or not in pending status");
+    }
+    await this.orderRepo.findOneAndUpdate({
+      filter: { _id: order._id },
+      update: { status: OrderStatus.cancelled }
+    });
+    return "order cancelled successfully";
+  }
+
+  async getUserOrders(user: UserDocument) {
+    const orders = await this.orderRepo.find({ filter: {userId: user._id } });
+    return orders;
   }
 
 
