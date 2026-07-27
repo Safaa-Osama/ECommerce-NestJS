@@ -32,4 +32,12 @@ export class OrderController {
     return this.orderService.getUserOrders(user);
   }
 
+  @Post("stripe-payment/:orderId")
+  stripePayment(
+    @User() user: UserDocument,
+    @Param("orderId") orderId: Types.ObjectId
+  ) {
+    return this.orderService.stripePayment(user, orderId)
+  }
+
 }

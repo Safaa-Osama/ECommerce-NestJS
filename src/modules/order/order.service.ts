@@ -7,6 +7,7 @@ import ProductRepo from 'src/common/reposetories/product-repo';
 import { UserDocument } from '../users/entities/user.entity';
 import { CreateOrderDto } from './dto/order.dto';
 import { Types } from 'mongoose';
+import { StripeService } from 'src/common/services/stripe/stripe.service';
 
 @Injectable()
 export class OrderService {
@@ -16,7 +17,10 @@ export class OrderService {
     private readonly cartRepo: CartRepo,
     private readonly couponRepo: CouponRepo,
     private readonly productRepo: ProductRepo,
+    private readonly stripeService: StripeService
   ) { }
+
+
   async createOrder(user: UserDocument, body: CreateOrderDto) {
     const { couponId, paymentMethod, phone, address } = body;
 
@@ -87,16 +91,16 @@ export class OrderService {
       });
     }
 
-    await this.cartRepo.findOneAndUpdate({
-      filter: { _id: cart._id },
-      update: { products: [] }
-    });
+    if (paymentMethod == PaymentMethod.cash) {
+      await this.cartRepo.findOneAndUpdate({
+        filter: { _id: cart._id },
+        update: { products: [] }
+      });
+    }
 
     return order;
 
   }
-
-
 
   async cancelOrder(user: UserDocument, orderId: Types.ObjectId) {
     const order = await this.orderRepo.findOne({
@@ -117,8 +121,56 @@ export class OrderService {
   }
 
   async getUserOrders(user: UserDocument) {
-    const orders = await this.orderRepo.find({ filter: {userId: user._id } });
+    const orders = await this.orderRepo.find({ filter: { userId: user._id } });
     return orders;
+  }
+
+
+  async stripePayment(user: UserDocument, orderId: Types.ObjectId) {
+    const order = await this.orderRepo.findOne({
+      filter: { _id: orderId, paymentStatus: PaymentStatus.pending, paymentMethod: PaymentMethod.card },
+      options: {
+        populate: [
+          {
+            path: "cartId",
+            populate:
+            {
+              path: "products.productId",
+              select: {
+                name: 1,
+                description: 1
+              }
+            }
+          }
+        ]
+      }
+    })
+
+    if (!order) {
+      throw new BadGatewayException("order is not found or not in pending status");
+    }
+
+    const session = await this.stripeService.createCheckoutSeasion({
+      customer_email: user.email,
+      metadata: [orderId.toString()],
+      line_items: order.cartId["products"].map((cartItem: any) => {
+        return {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: cartItem.productId.name,
+              description: cartItem.productId.description,
+
+            },
+            unit_amount: cartItem.productId.price
+          },
+          quantity: cartItem.quantity
+        }
+      }),
+      discounts: []
+    })
+
+    return session;
   }
 
 

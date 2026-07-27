@@ -8,35 +8,40 @@ export class StripeService {
     private readonly stripe = new Stripe(process.env.STRIPE_SECRET!)
     constructor() { }
 
-    createCgeckoutSeasion = async function () {
+    createCheckoutSeasion = async ({ customer_email, metadata, line_items, discounts
+    }: {
+        customer_email: string
+        metadata: {}
+        line_items: [{}]
+        discounts: []
+    }) => {
 
         const session = await this.stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             mode: 'payment',
-            customer_email: "",
-            metadata: {},
+            customer_email,
+            metadata,
             success_url: "http://localhost:3000/order/success",
             cancel_url: "http://localhost:3000/order/failure",
-            line_items: [
-                {
-                    price_data: {
-                        currency: "usd",
-                        product_data: {
-                            name: "",
-                            images: [],
-                            description: "",
-                        },
-                        unit_amount: 0,
-                    },
-                    quantity: 0,
-                }
-            ]
-
+            line_items,
+            discounts
         })
 
         return session;
-
     }
-
 }
 
+// line_items: [
+//                 {
+//                     price_data: {
+//                         currency: "usd",
+//                         product_data: {
+//                             name: "",
+//                             images: [],
+//                             description: "",
+//                         },
+//                         unit_amount: 0,
+//                     },
+//                     quantity: 0,
+//                 }
+//             ]
