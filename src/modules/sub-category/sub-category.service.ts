@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { CreateSubCategoryDto, UpdateSubCategoryDto } from './dto/subCategory.dto';
 import type { UserDocument } from '../users/entities/user.entity';
 import { SubCategoryRepo } from 'src/common/reposetories/subCategory-repo';
@@ -18,7 +18,7 @@ export class SubCategoryService {
   ) { }
 
 
-  async createSubCategory(body: CreateSubCategoryDto, logo: Express.Multer.File, user: UserDocument) {
+  async createSubCategory(body: CreateSubCategoryDto, user: UserDocument, logo?: Express.Multer.File) {
     const { name, isActive } = body;
 
 
@@ -59,7 +59,38 @@ export class SubCategoryService {
     return this.subCategoryRepo.find({})
   }
 
-  updateSubCategory(id: string, body: UpdateSubCategoryDto, logo: Express.Multer.File, user: UserDocument) {
-    const { } = body
+  async updateSubCategory(id: string, body: UpdateSubCategoryDto, user: UserDocument, logo?: Express.Multer.File) {
+    const { name, isActive } = body;
+    const subCategory = await this.subCategoryRepo.findOne({ filter: { _id: id } });
+    if (!subCategory) {
+      throw new BadRequestException("categoty not found");
+    }
+
+    if (name) {
+      if (await this.subCategoryRepo.findOne({ filter: { name, _id: { $ne: id } } })) {
+        throw new ConflictException("categoty name already exist");
+      }
+      subCategory.name = name;
+      subCategory.slug = slugify(name);
+    }
+
+    if (logo) {
+      const uploadedImage = await this.s3Service.uploadFile({
+        file: logo,
+        path: "category/subCategory",
+      });
+      if (subCategory.logo) {
+        await this.s3Service.deleteFile(subCategory.logo as string);
+      }
+      subCategory.logo = uploadedImage;
+    }
+
+    if (isActive !== undefined) {
+      subCategory.isActive = isActive;
+    }
+
+    subCategory.updatedBy = user._id;
+    await subCategory.save();
+    return subCategory;
   }
 }

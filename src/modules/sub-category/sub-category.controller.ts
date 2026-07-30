@@ -24,7 +24,7 @@ export class SubCategoryController {
     @UploadedFile(ParseFilePipe) file: Express.Multer.File,
     @User() user: UserDocument
   ) {
-    return this.subCategoryService.createSubCategory(body, file, user);
+    return this.subCategoryService.createSubCategory(body,user,file);
   }
 
   @Get()
@@ -41,10 +41,10 @@ export class SubCategoryController {
   )
   updateSubCategory(@Param() params: IdDto,
    @Body() body: UpdateSubCategoryDto,
-   @UploadedFile(ParseFilePipe) file: Express.Multer.File,
-   @User() user: UserDocument
+   @User() user: UserDocument,
+   @UploadedFile(new ParseFilePipe()) file?: Express.Multer.File,
   ) {
-    return this.subCategoryService.updateSubCategory(params.id, body,file,user);
+    return this.subCategoryService.updateSubCategory(params.id, body,user,file);
   }
 
 

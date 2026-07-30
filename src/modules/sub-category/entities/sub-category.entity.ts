@@ -34,6 +34,9 @@ export class SubCategory {
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User'})
+  updatedBy: Types.ObjectId;
 }
 
 export const SubCategorySchema = SchemaFactory.createForClass(SubCategory);

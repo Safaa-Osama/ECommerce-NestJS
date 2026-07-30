@@ -125,7 +125,6 @@ export class OrderService {
     return orders;
   }
 
-
   async stripePayment(user: UserDocument, orderId: Types.ObjectId) {
     const order = await this.orderRepo.findOne({
       filter: { _id: orderId, paymentStatus: PaymentStatus.pending, paymentMethod: PaymentMethod.card },
